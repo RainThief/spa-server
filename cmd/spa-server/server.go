@@ -10,7 +10,7 @@ import (
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 
-	"gitlab.com/martinfleming/spa-server/logging"
+	"gitlab.com/martinfleming/spa-server/internal/logging"
 )
 
 const (
@@ -33,12 +33,12 @@ func NewServer(port string) *Server {
 		WriteTimeout: httpWriteTimeout,
 	}
 	server := &Server{httpServer, mux.NewRouter()}
-	server.configureRoutes()
+	server.ConfigureRoutes()
 	return server
 }
 
-// configureRoutes declares how all the routing is handled
-func (s *Server) configureRoutes() {
+// ConfigureRoutes declares how all the routing is handled
+func (s *Server) ConfigureRoutes() {
 
 	spa := spaHandler{staticPath: "/var/www/html", indexPath: "index.html"}
 
@@ -52,10 +52,10 @@ func (s *Server) configureRoutes() {
 
 // Start the server listening
 func (s *Server) Start() {
-	logging.Info("Server starting; listening on port %s", Configuration.Port)
+	logging.Info("Server starting; listening on port %s", config.Port)
 	listenAndServe := func(s *Server) error {
-		certfile := Configuration.CertFile
-		keyfile := Configuration.KeyFile
+		certfile := config.CertFile
+		keyfile := config.KeyFile
 		if certfile == "" || keyfile == "" {
 			return s.server.ListenAndServe()
 		}
@@ -66,8 +66,8 @@ func (s *Server) Start() {
 		}()
 		go func() {
 			err <- s.server.ListenAndServeTLS(
-				Configuration.CertFile,
-				Configuration.KeyFile,
+				config.CertFile,
+				config.KeyFile,
 			)
 		}()
 
@@ -88,10 +88,10 @@ func (s *Server) Stop() {
 		logging.Error("Error stopping server: %s", err)
 		return
 	}
-	logging.Info("Server stopped successfully; releasing port %s", Configuration.Port)
+	logging.Info("Server stopped successfully; releasing port %s", config.Port)
 }
 
-// handleHTTPError sends an internal server error response if an error occured
+// handleHTTPError sends an internal server error response if an error occurred
 func handleHTTPError(err error, w http.ResponseWriter) bool {
 	if err != nil {
 		logging.Error("Server error occurred: %s", err)

@@ -8,8 +8,8 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-// Config is the configuration loaded from config.yaml
-type Config struct {
+// Configuration is the configuration loaded from config.yaml
+type Configuration struct {
 	LogLevel          string        `yaml:"logLevel"`
 	RequirementPath   string        `yaml:"requirementPath"`
 	HealthCheckPeriod time.Duration `yaml:"healthCheckPeriod"`
@@ -20,11 +20,11 @@ type Config struct {
 
 // ReadConfig reads the config from the file provided and parses it as Yaml
 // returning a Config object if parsed successfully.
-func ReadConfig(filePath string) (*Config, error) {
+func ReadConfig(filePath string) (*Configuration, error) {
 	data, err := ioutil.ReadFile(filepath.Clean(filePath))
 	if err != nil {
 		return nil, err
 	}
-	config := Config{}
+	config := Configuration{}
 	return &config, yaml.Unmarshal(data, &config)
 }

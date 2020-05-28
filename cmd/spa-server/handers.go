@@ -7,7 +7,7 @@ import (
 	"regexp"
 	"strings"
 
-	"gitlab.com/martinfleming/spa-server/logging"
+	"gitlab.com/martinfleming/spa-server/internal/logging"
 )
 
 func redirectToTLS(w http.ResponseWriter, r *http.Request) {

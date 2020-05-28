@@ -17,6 +17,9 @@ spaDirs:
     index: "index.html"
   - path: "html/spa2"
     index: "index.html"
+setExpires:
+  png: "1 month"
+  jpg: "1 month"
 
 writerobottests: true
 writeunittests: true
