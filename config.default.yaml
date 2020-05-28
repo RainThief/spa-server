@@ -1,0 +1,23 @@
+
+healthCheckPeriod: "15s"
+certFile: "/etc/spa-server/certs/spa-server.pem"
+keyFile: "/etc/spa-server/certs/spa-server.key"
+port: 443
+
+# @todo
+# logLevel is the level of logging for this application (DEBUG, INFO, WARN, ERROR)
+appLogLevel: "INFO"
+httpLog: true
+tlsEnable: true
+redirectNonTls: true
+redirectFromPort: 80
+allowDirectoryIndex: false
+spaDirs:
+  - path: "html"
+    index: "index.html"
+  - path: "html/spa2"
+    index: "index.html"
+
+writerobottests: true
+writeunittests: true
+setupci: true
