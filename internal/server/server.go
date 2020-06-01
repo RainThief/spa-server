@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"context"
@@ -10,6 +10,7 @@ import (
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 
+	"gitlab.com/martinfleming/spa-server/internal/config"
 	"gitlab.com/martinfleming/spa-server/internal/logging"
 )
 
@@ -18,6 +19,8 @@ const (
 	httpWriteTimeout
 )
 
+var cfg *config.Configuration = &config.Config
+
 // Server exposes an HTTP endpoint
 type Server struct {
 	server *http.Server
@@ -25,9 +28,10 @@ type Server struct {
 }
 
 // NewServer creates a new server ready to start listening for REST requests
-func NewServer(port string) *Server {
+func NewServer() *Server {
+	fmt.Println(cfg)
 	httpServer := &http.Server{
-		Addr:         ":" + port,
+		Addr:         ":" + cfg.Port,
 		ReadTimeout:  httpReadTimeout,
 		Handler:      handlers.CombinedLoggingHandler(os.Stdout, http.DefaultServeMux),
 		WriteTimeout: httpWriteTimeout,
@@ -40,7 +44,7 @@ func NewServer(port string) *Server {
 // ConfigureRoutes declares how all the routing is handled
 func (s *Server) ConfigureRoutes() {
 
-	spa := spaHandler{staticPath: "/var/www/html", indexPath: "index.html"}
+	spa := spaHandler{StaticPath: "/var/www/html", IndexPath: "index.html"}
 
 	// remove plain text response from default 404 handler
 	s.router.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -52,10 +56,10 @@ func (s *Server) ConfigureRoutes() {
 
 // Start the server listening
 func (s *Server) Start() {
-	logging.Info("Server starting; listening on port %s", config.Port)
+	logging.Info("Server starting; listening on port %s", cfg.Port)
 	listenAndServe := func(s *Server) error {
-		certfile := config.CertFile
-		keyfile := config.KeyFile
+		certfile := cfg.CertFile
+		keyfile := cfg.KeyFile
 		if certfile == "" || keyfile == "" {
 			return s.server.ListenAndServe()
 		}
@@ -66,8 +70,8 @@ func (s *Server) Start() {
 		}()
 		go func() {
 			err <- s.server.ListenAndServeTLS(
-				config.CertFile,
-				config.KeyFile,
+				cfg.CertFile,
+				cfg.KeyFile,
 			)
 		}()
 
@@ -88,22 +92,22 @@ func (s *Server) Stop() {
 		logging.Error("Error stopping server: %s", err)
 		return
 	}
-	logging.Info("Server stopped successfully; releasing port %s", config.Port)
+	logging.Info("Server stopped successfully; releasing port %s", cfg.Port)
 }
 
 // handleHTTPError sends an internal server error response if an error occurred
-func handleHTTPError(err error, w http.ResponseWriter) bool {
-	if err != nil {
-		logging.Error("Server error occurred: %s", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Header().Set("Content-Type", "application/json")
-		errResponse := fmt.Sprintf("{\"error\": \"%s\"}", err.Error())
-		_, err = w.Write([]byte(errResponse))
-		if err != nil {
-			logging.Fatal("Server error occurred: %s", err)
-			w.WriteHeader(http.StatusInternalServerError)
-		}
-		return true
-	}
-	return false
-}
+// func handleHTTPError(err error, w http.ResponseWriter) bool {
+// 	if err != nil {
+// 		logging.Error("Server error occurred: %s", err)
+// 		w.WriteHeader(http.StatusInternalServerError)
+// 		w.Header().Set("Content-Type", "application/json")
+// 		errResponse := fmt.Sprintf("{\"error\": \"%s\"}", err.Error())
+// 		_, err = w.Write([]byte(errResponse))
+// 		if err != nil {
+// 			logging.Fatal("Server error occurred: %s", err)
+// 			w.WriteHeader(http.StatusInternalServerError)
+// 		}
+// 		return true
+// 	}
+// 	return false
+// }

@@ -1,4 +1,4 @@
-package main
+package config
 
 import (
 	"io/ioutil"
@@ -7,6 +7,8 @@ import (
 
 	"gopkg.in/yaml.v2"
 )
+
+var Config Configuration
 
 // Configuration is the configuration loaded from config.yaml
 type Configuration struct {
@@ -25,6 +27,5 @@ func ReadConfig(filePath string) (*Configuration, error) {
 	if err != nil {
 		return nil, err
 	}
-	config := Configuration{}
-	return &config, yaml.Unmarshal(data, &config)
+	return &Config, yaml.Unmarshal(data, &Config)
 }

@@ -3,29 +3,22 @@ package main
 import (
 	"flag"
 
+	"gitlab.com/martinfleming/spa-server/internal/config"
 	"gitlab.com/martinfleming/spa-server/internal/logging"
+	"gitlab.com/martinfleming/spa-server/internal/server"
 )
 
 const (
 	defaultConfigPath = "/etc/spa-server/config.yaml"
 )
 
-// Configuration needs to be accessed at global level
-// @todo config to own internal package
-var config *Configuration
-
 func main() {
-	cfg, err := ReadConfig(parseArgs())
+	_, err := config.ReadConfig(parseArgs())
 	if err != nil {
 		logging.Error("Failed to read config file: %s", err)
 		return
 	}
-	// fmt.Println(cfg)
-	config = cfg
-	// fmt.Println(cfg)
-	// fmt.Println(Configuration)
-
-	server := NewServer(config.Port)
+	server := server.NewServer()
 	server.Start()
 	defer server.Stop()
 }
