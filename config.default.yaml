@@ -24,3 +24,11 @@ setExpires:
 writerobottests: true
 writeunittests: true
 setupci: true
+
+# env overrides config
+# config in /internal  and /pkg (main file parsing map string interface)
+# env vars overwwrite config, in case of spadir it will overwrite spadirs with only 1 directory
+# html dir needs to be web/html https://github.com/golang-standards/project-layout
+# config.yaml needs to be in /configs
+# dockerfile in /build
+# /githooks
