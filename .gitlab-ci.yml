@@ -17,6 +17,7 @@ build:
     script:
         - bash run_static_analysis.sh
         - apk update && apk add bash git
+        - bash run_static_analysis.sh
         - chmod +x scripts/build.sh
         - bash scripts/build.sh
     except:
