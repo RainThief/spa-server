@@ -9,17 +9,26 @@ services:
 
 stages:
     - build
+    - tag
 
 build:
     stage: build
     tags:
         - docker
     script:
-        - bash run_static_analysis.sh
         - apk update && apk add bash git
         - bash run_static_analysis.sh
-        - chmod +x scripts/build.sh
         - bash scripts/build.sh
     except:
         - /-backup$/
         - /-wip$/
+
+tag:
+    stage: tag
+    tags:
+        - linux
+    script:
+        - apk update && apk add bash git
+        - bash scripts/tag.sh
+    only:
+        - /^master$/
