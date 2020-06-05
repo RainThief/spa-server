@@ -9,7 +9,7 @@ services:
 
 stages:
     - build
-    - tag
+    # - tag
 
 build:
     stage: build
@@ -23,12 +23,12 @@ build:
         - /-backup$/
         - /-wip$/
 
-tag:
-    stage: tag
-    tags:
-        - linux
-    script:
-        - apk update && apk add bash git
-        - bash scripts/tag.sh
-    only:
-        - /^master$/
+# tag:
+#     stage: tag
+#     tags:
+#         - linux
+#     script:
+#         - apk update && apk add bash git
+#         - bash scripts/tag.sh
+#     only:
+#         - /^master$/
