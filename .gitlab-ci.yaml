@@ -1,0 +1,23 @@
+image: docker:19.03.0
+
+variables:
+    DOCKER_DRIVER: overlay2
+    DOCKER_TLS_CERTDIR: "/certs"
+
+services:
+    - docker:19.03.0-dind
+
+stages:
+    - build
+
+build:
+    stage: build
+    tags:
+        - docker
+    script:
+        - apk update && apk add bash git
+        - chmod +x scripts/build.sh
+        - bash scripts/build.sh
+    except:
+        - /-backup$/
+        - /-wip$/
