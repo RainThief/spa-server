@@ -1,12 +1,20 @@
 #!/bin/bash
 
+# run this manually until gital ci works
+
 set -uo pipefail
 
 SCRIPTS_ROOT="$(cd "$(dirname "$0")" && pwd)"
 source "$SCRIPTS_ROOT/include.sh"
 
-git checkout master
+IMAGE="registry.gitlab.com/martinfleming/spa-server"
 
-git tag "$(git_tag)"
+docker pull $IMAGE:latest
+NEW_TAG="$(git_tag)"
+docker tag $IMAGE:latest $IMAGE:"${NEW_TAG/v/}"
 
-git push http://martinfleming:-s8y6aM53wA1HiGEtYLb@gitlab.com/martinfleming/spa-server.git --tags
+git tag "$NEW_TAG"
+
+git push --tags
+
+docker push $IMAGE:"${NEW_TAG/v/}"

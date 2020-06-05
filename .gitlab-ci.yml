@@ -8,8 +8,8 @@ services:
     - docker:19.03.0-dind
 
 stages:
-    - build
     - lint
+    - build
 
 lint:
     stage: lint
@@ -21,7 +21,6 @@ lint:
     except:
         - /-backup$/
         - /-wip$/
-
 
 build:
     stage: build

@@ -4,7 +4,7 @@
 
 git_tag () {
 
-    VERSION=$(git describe --tags $(git rev-list --tags --max-count=1))
+    VERSION=$(git tag | sort -V | tail -1)
     if [ $? == 128 ]; then
         VERSION="v0.0.0"
     fi
