@@ -28,7 +28,7 @@ build:
         - docker
     script:
         - apk update && apk add bash git
-        - bash scripts/build.sh
+        - bash scripts/ci-build.sh
     except:
         - /-backup$/
         - /-wip$/
