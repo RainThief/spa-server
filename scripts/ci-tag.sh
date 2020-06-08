@@ -4,6 +4,10 @@ set -euo pipefail
 
 IMAGE="registry.gitlab.com/martinfleming/spa-server"
 
+echo $CI_REPOSITORY_URL
+
+
+# git clone https://<username>:<deploy_token>@gitlab.com/martinfleming/spa-server.git
 # run this manually until gital ci works
 # Semver image
 # Needs to pull latest
@@ -13,11 +17,11 @@ IMAGE="registry.gitlab.com/martinfleming/spa-server"
 # Copy in .netrc
 # Make as own repo project then make second project to create image
 
-git checkout master
 git pull origin master
+git checkout master
 
 # delete current tags
-git tag -l | xargs git tag -d
+# git tag -l | xargs git tag -d
 
 # fetch remote tags
 git fetch --tags
@@ -71,14 +75,13 @@ esac
 done
 
 NEW_TAG="$VNUM1.$VNUM2.$VNUM3"
-echo $NEW_TAG
-exit
 
+docker login $CI_REGISTRY -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN
 docker pull "$IMAGE":latest
 docker tag "$IMAGE":latest "$IMAGE":"$NEW_TAG"
+docker push "$IMAGE":"$NEW_TAG"
 
 git tag "v$NEW_TAG"
 
+git push https://$CI_DEPLOY_USER:$CI_DEPLOY_PASSWORD@gitlab.com/martinfleming/spa-server.git --tags
 git push --tags
-
-docker push "$IMAGE":"$NEW_TAG"

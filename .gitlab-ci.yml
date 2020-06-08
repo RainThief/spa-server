@@ -10,6 +10,7 @@ services:
 stages:
     - lint
     - build
+    - tag
 
 lint:
     stage: lint
@@ -32,3 +33,13 @@ build:
     except:
         - /-backup$/
         - /-wip$/
+
+tag:
+    stage: release
+    tags:
+        - tag
+    script:
+        - apk update && apk add bash git
+        - bash scripts/ci-tag.sh
+    only:
+        - /^master$/
