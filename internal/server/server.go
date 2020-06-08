@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"os"
 	"time"
@@ -29,7 +28,6 @@ type Server struct {
 
 // NewServer creates a new server ready to start listening for REST requests
 func NewServer() *Server {
-	fmt.Println(cfg)
 	httpServer := &http.Server{
 		Addr:         ":" + cfg.Port,
 		ReadTimeout:  httpReadTimeout,
@@ -64,7 +62,7 @@ func (s *Server) Start() {
 			return s.server.ListenAndServe()
 		}
 
-		err := make(chan error, 2)
+		err := make(chan error)
 		go func() {
 			err <- http.ListenAndServe(":80", handlers.CombinedLoggingHandler(os.Stdout, http.HandlerFunc(redirectToTLS)))
 		}()

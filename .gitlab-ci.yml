@@ -8,8 +8,20 @@ services:
     - docker:19.03.0-dind
 
 stages:
+    - lint
     - build
     - tag
+
+lint:
+    stage: lint
+    tags:
+        - docker
+    script:
+        - apk update && apk add bash git
+        - bash run_static_analysis.sh
+    except:
+        - /-backup$/
+        - /-wip$/
 
 build:
     stage: build
@@ -17,8 +29,7 @@ build:
         - docker
     script:
         - apk update && apk add bash git
-        - bash run_static_analysis.sh
-        - bash scripts/build.sh
+        - bash scripts/ci-build.sh
     except:
         - /-backup$/
         - /-wip$/
@@ -26,9 +37,9 @@ build:
 tag:
     stage: tag
     tags:
-        - linux
+        - docker
     script:
         - apk update && apk add bash git
-        - bash scripts/tag.sh
+        - bash scripts/ci-tag.sh
     only:
         - /^master$/
