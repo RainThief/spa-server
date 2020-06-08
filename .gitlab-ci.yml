@@ -3,32 +3,51 @@ image: docker:19.03.0
 variables:
     DOCKER_DRIVER: overlay2
     DOCKER_TLS_CERTDIR: "/certs"
+    SUPPORT_REPO: "https://$CI_DEPLOY_USER:$ACCESS_TOKEN@gitlab.com/martinfleming/gitlab-ci-support.git"
 
 services:
     - docker:19.03.0-dind
 
 stages:
+    - lint
     - build
     - tag
 
+lint:
+    stage: lint
+    tags:
+        - docker
+    script:
+        - apk update && apk add bash
+        - bash run_static_analysis.sh
+    except:
+        - /-backup$/
+        - /-wip$/
+
+# build docker image
 build:
     stage: build
     tags:
         - docker
     script:
         - apk update && apk add bash git
-        - bash run_static_analysis.sh
-        - bash scripts/build.sh
+        - git clone "$SUPPORT_REPO" --depth 1
+        - bash gitlab-ci-support/docker-build.sh
+        - rm -Rf gitlab-ci-support
     except:
         - /-backup$/
         - /-wip$/
 
+# tag release
 tag:
     stage: tag
     tags:
-        - linux
+        - docker
     script:
         - apk update && apk add bash git
-        - bash scripts/tag.sh
+        - git clone "$SUPPORT_REPO" --depth 1
+        - bash gitlab-ci-support/git-tag.sh patch
+        - bash gitlab-ci-support/docker-tag.sh keep
+        - rm -Rf gitlab-ci-support
     only:
         - /^master$/
