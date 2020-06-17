@@ -8,17 +8,28 @@ services:
     - docker:19.03.0-dind
 
 stages:
-    - lint
+    - test
     - build
     - tag
 
 lint:
-    stage: lint
+    stage: test
     tags:
         - docker
     script:
         - apk update && apk add bash git
         - bash run_static_analysis.sh
+    except:
+        - /-backup$/
+        - /-wip$/
+
+unit test:
+    stage: test
+    tags:
+        - docker
+    script:
+        - apk update && apk add bash
+        - bash run_unit_tests.sh
     except:
         - /-backup$/
         - /-wip$/
