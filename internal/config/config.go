@@ -17,6 +17,7 @@ type Configuration struct {
 	HealthCheckPeriod   time.Duration `yaml:"healthCheckPeriod"`
 	CertFile            string        `yaml:"certFile"`
 	KeyFile             string        `yaml:"keyFile"`
+	TLSPort             string        `yaml:"TLSPort"`
 	Port                string        `yaml:"port"`
 	AllowDirectoryIndex bool          `yaml:"allowDirectoryIndex"`
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"os"
+	"regexp"
 	"time"
 
 	"github.com/gorilla/handlers"
@@ -22,25 +23,58 @@ var cfg *config.Configuration = &config.Config
 
 // Server exposes an HTTP endpoint
 type Server struct {
-	server *http.Server
-	router *mux.Router
+	server         *http.Server
+	router         *mux.Router
+	TLS            bool
+	redirectServer *http.Server
 }
 
 // NewServer creates a new server ready to start listening for REST requests
 func NewServer() *Server {
 	httpServer := &http.Server{
-		Addr:         ":" + cfg.Port,
 		ReadTimeout:  httpReadTimeout,
 		Handler:      handlers.CombinedLoggingHandler(os.Stdout, http.DefaultServeMux),
 		WriteTimeout: httpWriteTimeout,
 	}
-	server := &Server{httpServer, mux.NewRouter()}
-	server.ConfigureRoutes()
+	TLS := isTLS()
+	server := &Server{httpServer, mux.NewRouter(), TLS, &http.Server{}}
+	server.server.Addr = ":" + cfg.Port
+	if TLS {
+		server.server.Addr = ":" + cfg.TLSPort
+		server.redirectServer = &http.Server{
+			ReadTimeout:  httpReadTimeout,
+			Handler:      handlers.CombinedLoggingHandler(os.Stdout, http.HandlerFunc(redirectToTLS)),
+			WriteTimeout: httpWriteTimeout,
+			Addr:         ":" + cfg.Port,
+		}
+	}
+	server.configureRoutes()
 	return server
 }
 
+func isTLS() bool {
+	certfile := cfg.CertFile
+	keyfile := cfg.KeyFile
+	if certfile == "" || keyfile == "" {
+		logging.Info("Can not use TLS, no certificates provided")
+		return false
+	}
+
+	if cfg.TLSPort == "" {
+		logging.Info("Can not use TLS, no TLS port declared")
+		return false
+	}
+
+	validPort := regexp.MustCompile(`^[0-9]{1,5}$`).MatchString(cfg.TLSPort)
+	if !validPort {
+		logging.Error("Can not use TLS, invalid port declared %s", cfg.TLSPort)
+	}
+
+	return validPort
+}
+
 // ConfigureRoutes declares how all the routing is handled
-func (s *Server) ConfigureRoutes() {
+func (s *Server) configureRoutes() {
 
 	spa := spaHandler{StaticPath: "/var/www/html", IndexPath: "index.html"}
 
@@ -54,19 +88,20 @@ func (s *Server) ConfigureRoutes() {
 
 // Start the server listening
 func (s *Server) Start() {
-	logging.Info("Server starting; listening on port %s", cfg.Port)
 	listenAndServe := func(s *Server) error {
-		certfile := cfg.CertFile
-		keyfile := cfg.KeyFile
-		if certfile == "" || keyfile == "" {
+
+		if !s.TLS {
+			logging.Info("Server starting; listening on port %s", cfg.Port)
 			return s.server.ListenAndServe()
 		}
 
 		err := make(chan error)
 		go func() {
-			err <- http.ListenAndServe(":80", handlers.CombinedLoggingHandler(os.Stdout, http.HandlerFunc(redirectToTLS)))
+			logging.Info("Server starting; listening on port %s", cfg.Port)
+			err <- s.redirectServer.ListenAndServe()
 		}()
 		go func() {
+			logging.Info("Server starting; listening on port %s", cfg.TLSPort)
 			err <- s.server.ListenAndServeTLS(
 				cfg.CertFile,
 				cfg.KeyFile,
@@ -86,11 +121,23 @@ func (s *Server) Start() {
 
 // Stop the server listening
 func (s *Server) Stop() {
-	if err := s.server.Shutdown(context.Background()); err != nil {
-		logging.Error("Error stopping server: %s", err)
-		return
+
+	_ = shutdownServer(s.server)
+
+	if s.TLS {
+		_ = shutdownServer(s.redirectServer)
 	}
-	logging.Info("Server stopped successfully; releasing port %s", cfg.Port)
+}
+
+func shutdownServer(server *http.Server) error {
+
+	if err := server.Shutdown(context.Background()); err != nil {
+		logging.Error("Error stopping server: %s", err)
+		return err
+	}
+	logging.Info("Server stopped successfully; releasing binding %s", server.Addr)
+
+	return nil
 }
 
 // handleHTTPError sends an internal server error response if an error occurred

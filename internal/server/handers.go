@@ -22,7 +22,7 @@ func redirectToTLS(w http.ResponseWriter, r *http.Request) {
 		target += "?" + r.URL.RawQuery
 	}
 
-	logging.Info("redirecting non TLS url to %s", target)
+	logging.Debug("redirecting non TLS url to %s", target)
 
 	http.Redirect(w, r, target, http.StatusTemporaryRedirect)
 
