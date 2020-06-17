@@ -1,6 +1,7 @@
 
 healthCheckPeriod: "15s"
-port: 443
+port: 80
+TLSPort: 443
 allowDirectoryIndex: true
 
 # @todo
