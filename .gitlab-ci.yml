@@ -1,16 +1,20 @@
 image: docker:19.03.0
 
+
 variables:
     DOCKER_DRIVER: overlay2
     DOCKER_TLS_CERTDIR: "/certs"
 
+
 services:
     - docker:19.03.0-dind
+
 
 stages:
     - test
     - build
     - tag
+
 
 lint:
     stage: test
@@ -23,6 +27,7 @@ lint:
         - /-backup$/
         - /-wip$/
 
+
 unit test:
     stage: test
     tags:
@@ -34,16 +39,20 @@ unit test:
         - /-backup$/
         - /-wip$/
 
+
 build:
     stage: build
     tags:
         - docker
     script:
         - apk update && apk add bash git
-        - bash scripts/ci-build.sh
+        - git clone "$SUPPORT_REPO" --depth 1
+        - bash gitlab-ci-support/docker-build.sh
+        - rm -Rf gitlab-ci-support
     except:
         - /-backup$/
         - /-wip$/
+
 
 tag:
     stage: tag
@@ -51,6 +60,10 @@ tag:
         - docker
     script:
         - apk update && apk add bash git
-        - bash scripts/ci-tag.sh
+        - git clone "$SUPPORT_REPO" --depth 1
+        - bash gitlab-ci-support/git-tag.sh patch
+        - bash gitlab-ci-support/docker-tag.sh keep
+        - rm -Rf gitlab-ci-support
     only:
         - /^master$/
+

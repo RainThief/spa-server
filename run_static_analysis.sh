@@ -8,4 +8,4 @@ docker run --rm -t \
     -v "$PROJECT_ROOT":/app \
     -w /app \
     golangci/golangci-lint:v1.27.0 \
-    golangci-lint run -E golint -D gosimple
+    golangci-lint run -E golint -E gosec -D gosimple
