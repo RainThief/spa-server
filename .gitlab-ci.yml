@@ -4,6 +4,7 @@ image: docker:19.03.0
 variables:
     DOCKER_DRIVER: overlay2
     DOCKER_TLS_CERTDIR: "/certs"
+    SUPPORT_REPO: "https://$CI_DEPLOY_USER:$ACCESS_TOKEN@gitlab.com/martinfleming/gitlab-ci-support.git"
 
 
 services:
