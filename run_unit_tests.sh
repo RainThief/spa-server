@@ -13,4 +13,4 @@ docker run --rm  -t \
     -w /app \
     -e XDG_CACHE_HOME=/tmp/.cache \
     -e GOPATH=/gopath -v $(pwd)/.gomodules:/gopath \
-    golang:1.14 go test ./... "$@"
+    golang:1.14 go test -race ./... "$@"
