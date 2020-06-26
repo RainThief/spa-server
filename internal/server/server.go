@@ -108,10 +108,12 @@ func (s *Server) Start() {
 			)
 		}()
 
-		select {
-		case msg := <-err:
-			return msg
-		}
+		return <-err
+
+		// select {
+		// case msg := <-err:
+		// 	return msg
+		// }
 
 	}
 	if err := listenAndServe(s); err != http.ErrServerClosed {

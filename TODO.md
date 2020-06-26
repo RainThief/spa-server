@@ -1,0 +1,51 @@
+tidy bash scripts
+
+test server.go line 111
+
+Go modules location on co but not in dev cont
+Go separate spa domains
+Use domain to generate certs
+To-do list
+
+
+bash colours to be identified by context spa server
+
+
+code coverage
+
+
+# @todo
+# logLevel is the level of logging for this application (DEBUG, INFO, WARN, ERROR)
+appLogLevel: "INFO"
+httpLog: true
+tlsEnable: true
+redirectNonTls: true
+redirectFromPort: 80
+
+spaDirs:
+  - path: "html"
+    index: "index.html"
+  - path: "html/spa2"
+    index: "index.html"
+setExpires:
+  png: "1 month"
+  jpg: "1 month"
+certFile: "/etc/spa-server/certs/spa-server.pem"
+keyFile: "/etc/spa-server/certs/spa-server.key"
+httpReadTimeout: 15s
+httpWriteTimeout: 15s
+
+
+writerobottests: true
+writeunittests: true
+setupci: true
+
+
+
+# env overrides config
+# config in /internal  and /pkg (main file parsing map string interface)
+# env vars overwwrite config, in case of spadir it will overwrite spadirs with only 1 directory
+# html dir needs to be web/html https://github.com/golang-standards/project-layout
+# config.yaml needs to be in /configs
+# dockerfile in /build
+# /githooks

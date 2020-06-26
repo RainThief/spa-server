@@ -45,7 +45,7 @@ func (h spaHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// check whether a file exists at the given path
 	if err = h.checkFile(filepath.Join(h.StaticPath, path), w, r); err == nil {
 		// if directory indexing is disallowed and the filepath is dir, server spa index
-		if cfg.AllowDirectoryIndex == false && strings.HasSuffix(r.URL.Path, "/") {
+		if !cfg.AllowDirectoryIndex && strings.HasSuffix(r.URL.Path, "/") {
 			http.ServeFile(w, r, filepath.Join(h.StaticPath, h.IndexPath))
 			return
 		}
