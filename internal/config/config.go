@@ -20,6 +20,11 @@ type Configuration struct {
 	TLSPort             string        `yaml:"TLSPort"`
 	Port                string        `yaml:"port"`
 	AllowDirectoryIndex bool          `yaml:"allowDirectoryIndex"`
+	SpaDirs             []struct {
+		StaticPath string `yaml:"path"`
+		IndexFile  string `yaml:"index"`
+		HostName   string `yaml:"host"`
+	} `yaml:"spaDirs"`
 }
 
 // ReadConfig reads the config from the file provided and parses it as Yaml

@@ -76,13 +76,16 @@ func isTLS() bool {
 // ConfigureRoutes declares how all the routing is handled
 func (s *Server) configureRoutes() {
 
-	spa := spaHandler{StaticPath: "/var/www/html", IndexPath: "index.html"}
-
 	// remove plain text response from default 404 handler
 	s.router.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 	})
-	s.router.PathPrefix("/").Handler(spa)
+
+	for _, spaConfig := range cfg.SpaDirs {
+		spa := spaHandler{StaticPath: spaConfig.StaticPath, IndexFile: spaConfig.IndexFile}
+		s.router.Host(spaConfig.HostName).PathPrefix("/").Handler(spa)
+	}
+
 	http.Handle("/", s.router)
 }
 
@@ -109,11 +112,6 @@ func (s *Server) Start() {
 		}()
 
 		return <-err
-
-		// select {
-		// case msg := <-err:
-		// 	return msg
-		// }
 
 	}
 	if err := listenAndServe(s); err != http.ErrServerClosed {

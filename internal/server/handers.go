@@ -30,7 +30,7 @@ func redirectToTLS(w http.ResponseWriter, r *http.Request) {
 
 type spaHandler struct {
 	StaticPath string
-	IndexPath  string
+	IndexFile  string
 }
 
 func (h spaHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -46,7 +46,7 @@ func (h spaHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err = h.checkFile(filepath.Join(h.StaticPath, path), w, r); err == nil {
 		// if directory indexing is disallowed and the filepath is dir, server spa index
 		if !cfg.AllowDirectoryIndex && strings.HasSuffix(r.URL.Path, "/") {
-			http.ServeFile(w, r, filepath.Join(h.StaticPath, h.IndexPath))
+			http.ServeFile(w, r, filepath.Join(h.StaticPath, h.IndexFile))
 			return
 		}
 		// otherwise, use http.FileServer to serve the static dir
@@ -58,7 +58,7 @@ func (h spaHandler) checkFile(path string, w http.ResponseWriter, r *http.Reques
 	if _, err := os.Stat(path); err != nil {
 		if os.IsNotExist(err) {
 			// file does not exist, serve IndexPath
-			http.ServeFile(w, r, filepath.Join(h.StaticPath, h.IndexPath))
+			http.ServeFile(w, r, filepath.Join(h.StaticPath, h.IndexFile))
 
 		}
 		// if we got an error (that wasn't that the file doesn't exist) stating the

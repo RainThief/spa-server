@@ -49,3 +49,6 @@ setupci: true
 # config.yaml needs to be in /configs
 # dockerfile in /build
 # /githooks
+
+gen ssl certs on run_dev
+@todo update readme with where certs are

@@ -3,3 +3,12 @@ healthCheckPeriod: "15s"
 port: 80
 TLSPort: 443
 allowDirectoryIndex: true
+certFile: /etc/spa-server/certs/spa-server.pem
+keyFile: /etc/spa-server/certs/spa-server.key
+spaDirs:
+  - path: "/var/www/html"
+    index: "index.html"
+    host: "{subdomain:(?:www.)?}localhost"
+  - path: "/var/www/html/spa2/"
+    index: "index.html"
+    host: "127.0.0.1"
