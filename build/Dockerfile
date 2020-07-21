@@ -1,5 +1,6 @@
 # Stage 1
-FROM golang:1.14 AS build
+ARG baseImage="golang:1.14"
+FROM ${baseImage} AS build
 COPY . /app
 WORKDIR /app
 RUN go build -o spa-server ./cmd/spa-server

@@ -1,3 +1,6 @@
+spa can each be tls or not
+
+
 tidy bash scripts
 
 test server.go line 111
