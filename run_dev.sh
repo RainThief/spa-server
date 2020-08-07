@@ -6,11 +6,14 @@
 # @todo use https://www.npmjs.com/package/npm-watch to auto reload
 
 PROJECT_ROOT="$(cd "$(dirname "$0")" && pwd)"
-set -eu
+set -u
 
 IMAGE="temp-spa-server"
 CHECK_FILE="cache-built"
 CACHE_IMAGE="$IMAGE-cache"
+
+RETRY=${RETRY:-"false"}
+sleep 2
 
 if [ ! -f "$CHECK_FILE" ]; then
 
@@ -22,9 +25,19 @@ RUN go build -o spa-server /app/cmd/spa-server
 EOF
 
     touch "$CHECK_FILE"
-
 fi
 
 docker build --build-arg baseImage="$CACHE_IMAGE" -f build/Dockerfile -t "$IMAGE" .
+if [ $? -ne 0 ]; then
+    if [ "$RETRY" == "false" ]; then
+        rm "$CHECK_FILE"
+        RETRY=true
+        . ./run_dev.sh
+    else
+        exit 1
+    fi
+fi
 
-docker run --init --rm -it -p 80:80 -p 443:443 -v $(pwd)/configs/config.default.yaml:/config.yml --name "$IMAGE" "$IMAGE" $@
+docker stop temp-spa-server
+
+docker run --init --rm -t -p 80:80 -p 443:443 -v $(pwd)/configs/config.default.yaml:/config.yml --name "$IMAGE" "$IMAGE" $@

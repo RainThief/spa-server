@@ -1,3 +1,11 @@
+
+router seems to be handling only http server
+
+watch file changes
+https://stackoverflow.com/questions/19605076/go-auto-recompile-and-reload-server-on-file-change
+https://github.com/cespare/reflex
+
+
 spa can each be tls or not
 
 
