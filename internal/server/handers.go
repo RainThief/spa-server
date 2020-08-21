@@ -39,7 +39,7 @@ func (h spaHandler) checkFile(path string, w http.ResponseWriter, r *http.Reques
 		if os.IsNotExist(err) {
 			// file does not exist, serve IndexPath
 			http.ServeFile(w, r, filepath.Join(h.staticPath, h.indexFile))
-
+			return err
 		}
 		// if we got an error (that wasn't that the file doesn't exist) stating the
 		// file, return a 500 internal server error and stop

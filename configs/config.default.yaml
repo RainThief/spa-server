@@ -1,9 +1,6 @@
 port: 80
 TLSPort: 443
 allowDirectoryIndex: true
-# @todo rmeove certs
-certFile: /etc/spa-server/certs/spa-server.pem
-keyFile: /etc/spa-server/certs/spa-server.key
 sitesAvailable:
   - path: "/var/www/html"
     index: "index.html"

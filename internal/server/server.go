@@ -25,10 +25,11 @@ const (
 
 // Servers collates TLS and non TLS servers with routing and sites configuration
 type Servers struct {
-	tlsServer    *http.Server
 	server       *http.Server
 	router       *mux.Router
 	sites        []config.Site
+	tlsServer    *http.Server
+	tlsRouter    *mux.Router
 	tlsSites     []config.Site
 	certificates []tls.Certificate
 }
@@ -36,24 +37,28 @@ type Servers struct {
 // NewServer creates a new server ready to start listening for REST requests
 func NewServer() *Servers {
 	server := &Servers{
-		&http.Server{}, &http.Server{}, mux.NewRouter(), []config.Site{}, []config.Site{}, []tls.Certificate{},
+		&http.Server{},
+		mux.NewRouter(),
+		[]config.Site{},
+		&http.Server{},
+		mux.NewRouter(),
+		[]config.Site{},
+		[]tls.Certificate{},
 	}
-	// @todo return errors
+	// @todo return errors and test
 	server.processSites()
-	server.configureServers()
 	server.configureRoutes()
+	server.configureServers()
 	return server
 }
 
 // sorts each configured site into TLS and NonTLS groups
 // TLS sites that redirect from NonTLS are also added to NonTLS group
 func (s *Servers) processSites() {
-
 	httpsErr := checkPort("HTTPS")
 	httpErr := checkPort("HTTP")
 
 	for _, spaConfig := range cfg.SitesAvailable {
-
 		if httpErr == nil && !config.IsTLSsite(spaConfig) {
 			s.sites = append(s.sites, config.Site(spaConfig))
 			logging.Debug("No valid certificate information for site %s, setting HTTP only", spaConfig.HostName)
@@ -70,30 +75,10 @@ func (s *Servers) processSites() {
 	}
 }
 
-func (s *Servers) configureServers() {
-	if len(s.sites) > 0 {
-		s.server = &http.Server{
-			ReadTimeout:  httpReadTimeout,
-			Handler:      handlers.CombinedLoggingHandler(os.Stdout, http.DefaultServeMux),
-			WriteTimeout: httpWriteTimeout,
-			Addr:         ":" + cfg.Port,
-		}
-	}
-	if len(s.tlsSites) > 0 {
-		s.tlsServer = &http.Server{
-			ReadTimeout:  httpReadTimeout,
-			Handler:      handlers.CombinedLoggingHandler(os.Stdout, http.DefaultServeMux),
-			WriteTimeout: httpWriteTimeout,
-			Addr:         ":" + cfg.TLSPort,
-			TLSConfig:    &tls.Config{Certificates: s.certificates},
-		}
-	}
-}
-
 // ConfigureRoutes declares how all the routing is handled
 func (s *Servers) configureRoutes() {
-
 	// remove plain text response from default 404 handler
+	// @todo test http router also uses this hander
 	s.router.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 	})
@@ -107,23 +92,41 @@ func (s *Servers) configureRoutes() {
 	}
 
 	for _, site := range s.tlsSites {
-		s.router.Host(site.HostName).PathPrefix("/").Handler(
-			spaHandler{staticPath: site.StaticPath, indexFile: site.IndexFile},
-		)
+		// @todo test with no cert or invalid cert
+		cert, err := tls.LoadX509KeyPair(site.CertFile, site.KeyFile)
+		if err == nil {
+			s.certificates = append(s.certificates, cert)
+			s.tlsRouter.Host(site.HostName).PathPrefix("/").Handler(
+				spaHandler{staticPath: site.StaticPath, indexFile: site.IndexFile},
+			)
+		}
 	}
+}
 
-	http.Handle("/", s.router)
+func (s *Servers) configureServers() {
+	if len(s.sites) > 0 {
+		s.server = &http.Server{
+			ReadTimeout:  httpReadTimeout,
+			Handler:      handlers.CombinedLoggingHandler(os.Stdout, s.router),
+			WriteTimeout: httpWriteTimeout,
+			Addr:         ":" + cfg.Port,
+		}
+	}
+	if len(s.tlsSites) > 0 {
+		s.tlsServer = &http.Server{
+			ReadTimeout:  httpReadTimeout,
+			Handler:      handlers.CombinedLoggingHandler(os.Stdout, s.tlsRouter),
+			WriteTimeout: httpWriteTimeout,
+			Addr:         ":" + cfg.TLSPort,
+			TLSConfig:    &tls.Config{Certificates: s.certificates},
+		}
+	}
 }
 
 // Start the server listening
 func (s *Servers) Start() {
+	// @todo test if both servers have not been started (0 sites each )
 	listenAndServe := func(s *Servers) error {
-
-		// if !s.TLS {
-		// 	logging.Info("Server starting; listening on port %s", cfg.Port)
-		// 	return s.server.ListenAndServe()
-		// }
-
 		err := make(chan error)
 		go func() {
 			logging.Info("Server starting; listening on port %s", cfg.Port)
@@ -133,13 +136,11 @@ func (s *Servers) Start() {
 			// @todo this fails as we are not geetn certs from here
 			// @todo check that certs are valid?
 			logging.Info("Server starting; listening on port %s", cfg.TLSPort)
-			// @todo remove certs
-			// err <- s.tlsServer.ListenAndServeTLS("", "")
-			err <- s.tlsServer.ListenAndServeTLS(cfg.CertFile, cfg.KeyFile)
+			// @todo remove gloab certs from config
+			err <- s.tlsServer.ListenAndServeTLS("", "")
 		}()
 
 		return <-err
-
 	}
 	if err := listenAndServe(s); err != http.ErrServerClosed {
 		logging.Error("Error starting server: %s", err)
@@ -153,7 +154,6 @@ func (s *Servers) Stop() {
 }
 
 func shutdownServer(server *http.Server) error {
-
 	if err := server.Shutdown(context.Background()); err != nil {
 		logging.Error("Error stopping server: %s", err)
 		return err

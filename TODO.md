@@ -1,12 +1,8 @@
 
-router seems to be handling only http server
 
 watch file changes
 https://stackoverflow.com/questions/19605076/go-auto-recompile-and-reload-server-on-file-change
 https://github.com/cespare/reflex
-
-
-spa can each be tls or not
 
 
 tidy bash scripts
@@ -14,7 +10,6 @@ tidy bash scripts
 test server.go line 111
 
 Go modules location on co but not in dev cont
-Go separate spa domains
 Use domain to generate certs
 To-do list
 
@@ -33,16 +28,10 @@ tlsEnable: true
 redirectNonTls: true
 redirectFromPort: 80
 
-spaDirs:
-  - path: "html"
-    index: "index.html"
-  - path: "html/spa2"
-    index: "index.html"
+
 setExpires:
   png: "1 month"
   jpg: "1 month"
-certFile: "/etc/spa-server/certs/spa-server.pem"
-keyFile: "/etc/spa-server/certs/spa-server.key"
 httpReadTimeout: 15s
 httpWriteTimeout: 15s
 
