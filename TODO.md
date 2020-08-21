@@ -1,7 +1,24 @@
 
-healthCheckPeriod: "15s"
-port: 443
-allowDirectoryIndex: true
+
+watch file changes
+https://stackoverflow.com/questions/19605076/go-auto-recompile-and-reload-server-on-file-change
+https://github.com/cespare/reflex
+
+
+tidy bash scripts
+
+test server.go line 111
+
+Go modules location on co but not in dev cont
+Use domain to generate certs
+To-do list
+
+
+bash colours to be identified by context spa server
+
+
+code coverage
+
 
 # @todo
 # logLevel is the level of logging for this application (DEBUG, INFO, WARN, ERROR)
@@ -11,16 +28,10 @@ tlsEnable: true
 redirectNonTls: true
 redirectFromPort: 80
 
-spaDirs:
-  - path: "html"
-    index: "index.html"
-  - path: "html/spa2"
-    index: "index.html"
+
 setExpires:
   png: "1 month"
   jpg: "1 month"
-certFile: "/etc/spa-server/certs/spa-server.pem"
-keyFile: "/etc/spa-server/certs/spa-server.key"
 httpReadTimeout: 15s
 httpWriteTimeout: 15s
 
@@ -38,3 +49,6 @@ setupci: true
 # config.yaml needs to be in /configs
 # dockerfile in /build
 # /githooks
+
+gen ssl certs on run_dev
+@todo update readme with where certs are

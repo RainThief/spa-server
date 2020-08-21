@@ -33,5 +33,6 @@ func parseArgs() string {
 		logging.Debug("No user-supplied configuration file, using default")
 		return defaultConfigPath
 	}
+	logging.Debug("Using user-supplied configuration file %s", args[0])
 	return args[0]
 }

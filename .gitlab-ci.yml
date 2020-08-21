@@ -1,20 +1,23 @@
 image: docker:19.03.0
 
+
 variables:
     DOCKER_DRIVER: overlay2
     DOCKER_TLS_CERTDIR: "/certs"
     SUPPORT_REPO: "https://$CI_DEPLOY_USER:$ACCESS_TOKEN@gitlab.com/martinfleming/gitlab-ci-support.git"
 
+
 services:
     - docker:19.03.0-dind
 
+
 stages:
-    - lint
+    - test
     - build
     - tag
 
 lint:
-    stage: lint
+    stage: test
     tags:
         - docker
     script:
@@ -23,6 +26,19 @@ lint:
     except:
         - /-backup$/
         - /-wip$/
+
+
+unit_test:
+    stage: test
+    tags:
+        - docker
+    script:
+        - apk update && apk add bash
+        - bash run_unit_tests.sh
+    except:
+        - /-backup$/
+        - /-wip$/
+
 
 # build docker image
 build:
@@ -38,7 +54,7 @@ build:
         - /-backup$/
         - /-wip$/
 
-# tag release
+
 tag:
     stage: tag
     tags:
