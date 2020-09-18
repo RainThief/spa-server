@@ -62,3 +62,8 @@ shellcheck
 cleanup bash
 
 fix tagging
+
+Sigkilll on timeout or does dicker do this
+Make list of features and set release point
+
+binary artifact in relases page

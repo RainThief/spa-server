@@ -6,6 +6,34 @@ set -u
 
 PROJECT_ROOT="$(cd "$(dirname "$0")" && pwd)"
 
+# @todo tidy this shit
+HEALTH_CHECK_PORT="$(sed -nr 's/(.*)healthCheckPort:( )*(.*)/\3/p' configs/config.default.yaml)"
+if [ "$HEALTH_CHECK_PORT" == "" ]; then
+    HEALTH_CHECK_PORT="$(sed -nr 's/(.*)healthCheckDefaultPort =( )*(.*)/\3/p' internal/server/server.go)"
+fi
+echo $HEALTH_CHECK_PORT
+CURRENT_HEALTH_CHECK_PORT="$(sed -nr 's/(.*)localhost:([0-9]+)(.*)/\2/p' build/Dockerfile)"
+echo $CURRENT_HEALTH_CHECK_PORT
+if [ "$CURRENT_HEALTH_CHECK_PORT" != "$HEALTH_CHECK_PORT" ]; then
+    echo $HEALTH_CHECK_PORT
+    echo "here"
+    cp -f build/Dockerfile build/Dockerfile.bak
+    sed -r "s/localhost:[0-9]+/localhost:$HEALTH_CHECK_PORT/g" build/Dockerfile > build/Dockerfile.new
+    mv build/Dockerfile.new build/Dockerfile
+fi
+exit
+# echo $DEFAULT_HEALTH_CHECK_PORT
+
+exit
+
+# # @todo pushd
+
+# # HEALTH_CHECK_PORT=$(echo $HEALTH_CHECK_PORT | xargs)
+# cp -f build/Dockerfile build/Dockerfile.bak
+# sed -r "s/http:\/\/localhost:[0-9]+/localhost:$HEALTH_CHECK_PORT/g" build/Dockerfile > build/Dockerfile.new
+# mv build/Dockerfile.new build/Dockerfile
+
+
 IMAGE="temp-spa-server"
 CHECK_FILE="cache-built"
 CACHE_IMAGE="$IMAGE-cache"
