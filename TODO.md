@@ -57,3 +57,8 @@ gen ssl certs on run_dev
 hadolint
 
 shellcheck
+
+
+cleanup bash
+
+fix tagging

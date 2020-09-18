@@ -2,6 +2,9 @@ package main
 
 import (
 	"flag"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"gitlab.com/martinfleming/spa-server/internal/config"
 	"gitlab.com/martinfleming/spa-server/internal/logging"
@@ -19,8 +22,13 @@ func main() {
 		return
 	}
 	server := server.NewServer()
-	server.Start()
 	defer server.Stop()
+	sigint := make(chan os.Signal, 1)
+	signal.Notify(sigint, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+	go func() {
+		server.Start()
+	}()
+	<-sigint
 }
 
 // parseArgs gets the path to config file if supplied from commandline

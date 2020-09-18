@@ -12,3 +12,6 @@ sitesAvailable:
   - path: "/var/www/html/spa2/"
     index: "index.html"
     host: "127.0.0.1"
+  - path: "/var/www/html"
+    index: "index.html"
+    host: "{all:.*}"

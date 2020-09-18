@@ -7,6 +7,7 @@ import (
 	"os"
 	"regexp"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/gorilla/handlers"
@@ -27,13 +28,14 @@ const (
 
 // Servers collates TLS and non TLS servers with routing and sites configuration
 type Servers struct {
-	server       *http.Server
-	router       *mux.Router
-	sites        []config.Site
-	tlsServer    *http.Server
-	tlsRouter    *mux.Router
-	tlsSites     []config.Site
-	certificates []tls.Certificate
+	server            *http.Server
+	router            *mux.Router
+	sites             []config.Site
+	tlsServer         *http.Server
+	tlsRouter         *mux.Router
+	tlsSites          []config.Site
+	certificates      []tls.Certificate
+	healthCheckServer *http.Server
 }
 
 // NewServer creates a new server ready to start listening for REST requests
@@ -46,6 +48,7 @@ func NewServer() *Servers {
 		mux.NewRouter(),
 		[]config.Site{},
 		[]tls.Certificate{},
+		&http.Server{},
 	}
 	// @todo return errors and test
 	server.processSites()
@@ -107,39 +110,36 @@ func (s *Servers) configureRoutes() {
 
 func (s *Servers) configureServers() {
 	if len(s.sites) > 0 {
-		s.server = &http.Server{
-			ReadTimeout:  httpReadTimeout,
-			Handler:      handlers.CombinedLoggingHandler(os.Stdout, s.router),
-			WriteTimeout: httpWriteTimeout,
-			Addr:         ":" + cfg.Port,
-		}
+		s.server = configureServer(cfg.Port, handlers.CombinedLoggingHandler(os.Stdout, s.router))
 	}
 	if len(s.tlsSites) > 0 {
-		s.tlsServer = &http.Server{
-			ReadTimeout:  httpReadTimeout,
-			Handler:      handlers.CombinedLoggingHandler(os.Stdout, s.tlsRouter),
-			WriteTimeout: httpWriteTimeout,
-			Addr:         ":" + cfg.TLSPort,
-			TLSConfig:    &tls.Config{Certificates: s.certificates},
+		s.tlsServer = configureServer(cfg.TLSPort, handlers.CombinedLoggingHandler(os.Stdout, s.tlsRouter))
+		s.tlsServer.TLSConfig = &tls.Config{Certificates: s.certificates}
+	}
+	if !cfg.DisableHealthCheck {
+		if cfg.HealthCheckPort == 0 {
+			cfg.HealthCheckPort = healthCheckDefaultPort
 		}
+		s.healthCheckServer = configureServer(strconv.Itoa(cfg.HealthCheckPort), HealthCheckHandler{})
 	}
 }
 
 // Start the server listening
 func (s *Servers) Start() {
-	// @todo test if both servers have not been started (0 sites each )
 	listenAndServe := func(s *Servers) error {
 		err := make(chan error)
 		go func() {
-			err <- healthCheckServer()
+			logging.Info("Healthcheck server starting; listening on port %v", cfg.HealthCheckPort)
+			err <- s.healthCheckServer.ListenAndServe()
 		}()
+		// @todo test if both servers have not been started (0 sites each )
 		go func() {
-			logging.Info("Server starting; listening on port %s", cfg.Port)
+			logging.Info("HTTP server starting; listening on port %s", cfg.Port)
 			err <- s.server.ListenAndServe()
 		}()
 		go func() {
 			// @todo check that certs are valid?
-			logging.Info("Server starting; listening on port %s", cfg.TLSPort)
+			logging.Info("HTTPS server starting; listening on port %s", cfg.TLSPort)
 			err <- s.tlsServer.ListenAndServeTLS("", "")
 		}()
 		return <-err
@@ -149,10 +149,22 @@ func (s *Servers) Start() {
 	}
 }
 
-// Stop the server listening
+// Stop the server listening; graceful shutdown
 func (s *Servers) Stop() {
-	_ = shutdownServer(s.server)
-	_ = shutdownServer(s.tlsServer)
+	var wg sync.WaitGroup
+	servers := [3]*http.Server{
+		s.server,
+		s.tlsServer,
+		s.healthCheckServer,
+	}
+	wg.Add(len(servers))
+	for _, server := range servers {
+		go func(server *http.Server) {
+			_ = shutdownServer(server)
+			defer wg.Done()
+		}(server)
+	}
+	wg.Wait()
 }
 
 func shutdownServer(server *http.Server) error {
@@ -186,26 +198,13 @@ func compress(handler http.Handler, config config.Site) http.Handler {
 	return handler
 }
 
-func healthCheckServer() error {
-	if !cfg.DisableHealthCheck {
-		port := cfg.HealthCheckPort
-		if port == 0 {
-			port = healthCheckDefaultPort
-		}
-		healthServer := &http.Server{
-			ReadTimeout:  httpReadTimeout,
-			Handler:      HealthCheckHandler{},
-			WriteTimeout: httpWriteTimeout,
-			Addr:         ":" + strconv.Itoa(port),
-		}
-		logging.Info("Healthcheck server starting; listening on port %v", port)
-		defer func() {
-			_ = shutdownServer(healthServer)
-		}()
-
-		return healthServer.ListenAndServe()
+func configureServer(port string, handler http.Handler) *http.Server {
+	return &http.Server{
+		ReadTimeout:  httpReadTimeout,
+		Handler:      handler,
+		WriteTimeout: httpWriteTimeout,
+		Addr:         ":" + port,
 	}
-	return nil
 }
 
 // handleHTTPError sends an internal server error response if an error occurred

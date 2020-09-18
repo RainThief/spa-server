@@ -70,4 +70,3 @@ tag:
         - rm -Rf gitlab-ci-support
     only:
         - /^master$/
-        - tags
