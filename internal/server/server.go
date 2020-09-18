@@ -180,14 +180,14 @@ func checkPort(serverType string) error {
 }
 
 func compress(handler http.Handler, config config.Site) http.Handler {
-	if config.Compress == true {
+	if config.Compress {
 		return handlers.CompressHandler(handler)
 	}
 	return handler
 }
 
 func healthCheckServer() error {
-	if cfg.DisableHealthCheck == false {
+	if !cfg.DisableHealthCheck {
 		port := cfg.HealthCheckPort
 		if port == 0 {
 			port = healthCheckDefaultPort
@@ -199,7 +199,10 @@ func healthCheckServer() error {
 			Addr:         ":" + strconv.Itoa(port),
 		}
 		logging.Info("Healthcheck server starting; listening on port %v", port)
-		defer shutdownServer(healthServer)
+		defer func() {
+			_ = shutdownServer(healthServer)
+		}()
+
 		return healthServer.ListenAndServe()
 	}
 	return nil
