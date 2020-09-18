@@ -17,6 +17,7 @@ type Site struct {
 	CertFile   string `yaml:"certFile"`
 	KeyFile    string `yaml:"keyFile"`
 	Redirect   bool   `yaml:"redirectNonTLS"`
+	Compress   bool   `yaml:"compress"`
 }
 
 // Configuration is the configuration loaded from config.yaml

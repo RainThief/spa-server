@@ -26,6 +26,7 @@ lint:
     except:
         - /-backup$/
         - /-wip$/
+        - tags
 
 
 unit_test:
@@ -38,6 +39,7 @@ unit_test:
     except:
         - /-backup$/
         - /-wip$/
+        - tags
 
 
 # build docker image
@@ -53,6 +55,7 @@ build:
     except:
         - /-backup$/
         - /-wip$/
+        - tags
 
 
 tag:
@@ -67,3 +70,4 @@ tag:
         - rm -Rf gitlab-ci-support
     only:
         - /^master$/
+        - tags

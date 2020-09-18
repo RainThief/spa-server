@@ -88,7 +88,7 @@ func (s *Servers) configureRoutes() {
 		if site.Redirect {
 			spa = httphandlers.RedirectNonTLSHandler{}
 		}
-		s.router.Host(site.HostName).PathPrefix("/").Handler(spa)
+		s.router.Host(site.HostName).PathPrefix("/").Handler(compress(spa, site))
 	}
 
 	for _, site := range s.tlsSites {
@@ -97,7 +97,7 @@ func (s *Servers) configureRoutes() {
 		if err == nil {
 			s.certificates = append(s.certificates, cert)
 			s.tlsRouter.Host(site.HostName).PathPrefix("/").Handler(
-				spaHandler{staticPath: site.StaticPath, indexFile: site.IndexFile},
+				compress(spaHandler{staticPath: site.StaticPath, indexFile: site.IndexFile}, site),
 			)
 		}
 	}
@@ -136,7 +136,6 @@ func (s *Servers) Start() {
 			// @todo this fails as we are not geetn certs from here
 			// @todo check that certs are valid?
 			logging.Info("Server starting; listening on port %s", cfg.TLSPort)
-			// @todo remove gloab certs from config
 			err <- s.tlsServer.ListenAndServeTLS("", "")
 		}()
 

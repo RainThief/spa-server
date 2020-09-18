@@ -8,6 +8,7 @@ sitesAvailable:
     certFile: /etc/spa-server/certs/spa-server.pem
     keyFile: /etc/spa-server/certs/spa-server.key
     redirectNonTLS: true
+    compress: true
   - path: "/var/www/html/spa2/"
     index: "index.html"
     host: "127.0.0.1"
