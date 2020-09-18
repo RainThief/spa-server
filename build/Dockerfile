@@ -1,5 +1,5 @@
 # Stage 1
-ARG baseImage="golang:1.14"
+ARG baseImage="golang:1.15"
 FROM ${baseImage} AS build
 COPY . /app
 WORKDIR /app
@@ -16,7 +16,7 @@ COPY certs /etc/spa-server/certs
 COPY configs/config.default.yaml /etc/spa-server/config.yaml
 COPY web /var/www/html
 
-# @todo needs to get port dynamically
-HEALTHCHECK --interval=15s --timeout=5s CMD (curl -k -X GET -Is https://localhost:80 | grep "200") || exit 1
+# @todo needs to get port dynamically on build script (run dev and pipelines)
+HEALTHCHECK --interval=15s --timeout=5s CMD (curl -k -X GET -Is http://localhost:8079 | grep "204") || exit 1
 
 ENTRYPOINT ["/app/bin/spa-server"]

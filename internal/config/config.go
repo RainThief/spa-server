@@ -23,15 +23,14 @@ type Site struct {
 // Configuration is the configuration loaded from config.yaml
 // @todo remove key and cert
 type Configuration struct {
-	LogLevel        string `yaml:"logLevel"`
-	RequirementPath string `yaml:"requirementPath"`
-	// @todo remove certs
-	CertFile            string `yaml:"certFile"`
-	KeyFile             string `yaml:"keyFile"`
+	LogLevel            string `yaml:"logLevel"`
+	RequirementPath     string `yaml:"requirementPath"`
 	TLSPort             string `yaml:"TLSPort"`
 	Port                string `yaml:"port"`
 	AllowDirectoryIndex bool   `yaml:"allowDirectoryIndex"`
 	SitesAvailable      []Site `yaml:"sitesAvailable"`
+	DisableHealthCheck  bool   `yaml:"disableHealthCheck"`
+	HealthCheckPort     int    `yaml:"healthCheckPort"`
 }
 
 // ReadConfig reads the config from the file provided and parses it as Yaml
@@ -44,6 +43,7 @@ func ReadConfig(filePath string) (*Configuration, error) {
 	return &Config, yaml.Unmarshal(data, &Config)
 }
 
+// IsTLSsite inspects site config to see if can be served under ssl
 func IsTLSsite(site Site) bool {
 	if strings.TrimSpace(site.CertFile) == "" ||
 		strings.TrimSpace(site.KeyFile) == "" {

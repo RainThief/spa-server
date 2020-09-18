@@ -52,3 +52,8 @@ setupci: true
 
 gen ssl certs on run_dev
 @todo update readme with where certs are
+
+
+hadolint
+
+shellcheck

@@ -1,12 +1,10 @@
 #!/usr/bin/env bash
+set -u
 
 # Use this file to build and run the project for use in developing the application
 # to force rebuild of go cache delete ./cache_built file
 
-# @todo use https://www.npmjs.com/package/npm-watch to auto reload
-
 PROJECT_ROOT="$(cd "$(dirname "$0")" && pwd)"
-set -u
 
 IMAGE="temp-spa-server"
 CHECK_FILE="cache-built"
@@ -18,7 +16,7 @@ sleep 2
 if [ ! -f "$CHECK_FILE" ]; then
 
 docker build -t "$CACHE_IMAGE" -f - . <<EOF
-FROM golang:1.14 AS build
+FROM golang:1.15 AS build
 COPY . /app
 WORKDIR /app
 RUN go build -o spa-server /app/cmd/spa-server
@@ -40,4 +38,4 @@ fi
 
 docker stop temp-spa-server
 
-docker run --init --rm -t -p 80:80 -p 443:443 -v $(pwd)/configs/config.default.yaml:/config.yml --name "$IMAGE" "$IMAGE" $@
+docker run --init --rm -t --network=host -v $(pwd)/configs/config.default.yaml:/config.yml --name "$IMAGE" "$IMAGE" $@

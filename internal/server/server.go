@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"regexp"
+	"strconv"
 	"time"
 
 	"github.com/gorilla/handlers"
@@ -21,6 +22,7 @@ var cfg *config.Configuration = &config.Config
 const (
 	httpReadTimeout = 15 * time.Second
 	httpWriteTimeout
+	healthCheckDefaultPort = 8079
 )
 
 // Servers collates TLS and non TLS servers with routing and sites configuration
@@ -129,16 +131,17 @@ func (s *Servers) Start() {
 	listenAndServe := func(s *Servers) error {
 		err := make(chan error)
 		go func() {
+			err <- healthCheckServer()
+		}()
+		go func() {
 			logging.Info("Server starting; listening on port %s", cfg.Port)
 			err <- s.server.ListenAndServe()
 		}()
 		go func() {
-			// @todo this fails as we are not geetn certs from here
 			// @todo check that certs are valid?
 			logging.Info("Server starting; listening on port %s", cfg.TLSPort)
 			err <- s.tlsServer.ListenAndServeTLS("", "")
 		}()
-
 		return <-err
 	}
 	if err := listenAndServe(s); err != http.ErrServerClosed {
@@ -172,6 +175,32 @@ func checkPort(serverType string) error {
 	}
 	if !regexp.MustCompile(`^[0-9]{1,5}$`).MatchString(port) {
 		return logging.LogAndRaiseError("Can not serve %s, invalid port declared %s", serverType, port)
+	}
+	return nil
+}
+
+func compress(handler http.Handler, config config.Site) http.Handler {
+	if config.Compress == true {
+		return handlers.CompressHandler(handler)
+	}
+	return handler
+}
+
+func healthCheckServer() error {
+	if cfg.DisableHealthCheck == false {
+		port := cfg.HealthCheckPort
+		if port == 0 {
+			port = healthCheckDefaultPort
+		}
+		healthServer := &http.Server{
+			ReadTimeout:  httpReadTimeout,
+			Handler:      HealthCheckHandler{},
+			WriteTimeout: httpWriteTimeout,
+			Addr:         ":" + strconv.Itoa(port),
+		}
+		logging.Info("Healthcheck server starting; listening on port %v", port)
+		defer shutdownServer(healthServer)
+		return healthServer.ListenAndServe()
 	}
 	return nil
 }

@@ -11,3 +11,12 @@ r.Host("www.example.com")
 r.Host("{subdomain:[a-z]+}.domain.com")
 
 run_dev.sh
+
+
+document all optional config options and remove from config yaml
+
+if you edit health check and healthcheck port you need to edit docker file and rebuild
+
+CONFIG DEFAULTS
+disableHealthCheck: false
+healthCheckPort: 8079
