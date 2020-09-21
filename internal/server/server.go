@@ -116,22 +116,22 @@ func (s *Servers) configureServers() {
 		s.tlsServer = configureServer(cfg.TLSPort, handlers.CombinedLoggingHandler(os.Stdout, s.tlsRouter))
 		s.tlsServer.TLSConfig = &tls.Config{Certificates: s.certificates}
 	}
-	if !cfg.DisableHealthCheck {
-		if cfg.HealthCheckPort == 0 {
-			cfg.HealthCheckPort = healthCheckDefaultPort
-		}
-		s.healthCheckServer = configureServer(strconv.Itoa(cfg.HealthCheckPort), HealthCheckHandler{})
+	if cfg.HealthCheckPort == 0 {
+		cfg.HealthCheckPort = healthCheckDefaultPort
 	}
+	s.healthCheckServer = configureServer(strconv.Itoa(cfg.HealthCheckPort), HealthCheckHandler{})
 }
 
 // Start the server listening
 func (s *Servers) Start() {
 	listenAndServe := func(s *Servers) error {
 		err := make(chan error)
-		go func() {
-			logging.Info("Healthcheck server starting; listening on port %v", cfg.HealthCheckPort)
-			err <- s.healthCheckServer.ListenAndServe()
-		}()
+		if !cfg.DisableHealthCheck {
+			go func() {
+				logging.Info("Healthcheck server starting; listening on port %v", cfg.HealthCheckPort)
+				err <- s.healthCheckServer.ListenAndServe()
+			}()
+		}
 		// @todo test if both servers have not been started (0 sites each )
 		go func() {
 			logging.Info("HTTP server starting; listening on port %s", cfg.Port)
@@ -152,29 +152,26 @@ func (s *Servers) Start() {
 // Stop the server listening; graceful shutdown
 func (s *Servers) Stop() {
 	var wg sync.WaitGroup
-	servers := [3]*http.Server{
+	servers := []*http.Server{
 		s.server,
 		s.tlsServer,
-		s.healthCheckServer,
+	}
+	if !cfg.DisableHealthCheck {
+		servers = append(servers, s.healthCheckServer)
 	}
 	wg.Add(len(servers))
 	for _, server := range servers {
-		go func(server *http.Server) {
-			_ = shutdownServer(server)
-			defer wg.Done()
-		}(server)
+		go shutdownServer(server, &wg)
 	}
 	wg.Wait()
 }
 
-func shutdownServer(server *http.Server) error {
+func shutdownServer(server *http.Server, wg *sync.WaitGroup) {
+	defer wg.Done()
 	if err := server.Shutdown(context.Background()); err != nil {
 		logging.Error("Error stopping server: %s", err)
-		return err
 	}
 	logging.Info("Server stopped successfully; releasing binding %s", server.Addr)
-
-	return nil
 }
 
 func checkPort(serverType string) error {
