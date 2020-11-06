@@ -1,0 +1,65 @@
+name: SPA Server
+
+
+on:
+  push:
+    branches:
+      - "*"
+
+
+env:
+  CI: true
+  DOCKER_USER: ${{ github.actor }}
+  DOCKER_PASS: ${{ secrets.GITHUB_TOKEN }}
+  DOCKER_REG: docker.pkg.github.com
+
+
+jobs:
+  check:
+    name: Check
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Code analysis
+        run: ./run_static_analysis.sh
+
+
+  test:
+    name: Test
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Unit tests
+        run: ./run_unit_tests.sh
+
+
+  build:
+    name: Build
+    needs: [check, test]
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Build image
+        run: ./scripts/build.sh
+
+
+  remove-package-versions:
+    name: Clean up Docker registry
+    runs-on: ubuntu-latest
+    steps:
+      - name: Remove old package versions
+        id: remove-package-versions
+        uses: navikt/remove-package-versions@main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          remove_semver: false
+          keep_versions: 5
