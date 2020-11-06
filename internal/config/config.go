@@ -8,20 +8,22 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+// Config global app configuration
 var Config Configuration
 
+// Site holds configuration for individual spa sites
 type Site struct {
-	StaticPath string `yaml:"path"`
-	IndexFile  string `yaml:"index"`
-	HostName   string `yaml:"host"`
-	CertFile   string `yaml:"certFile"`
-	KeyFile    string `yaml:"keyFile"`
-	Redirect   bool   `yaml:"redirectNonTLS"`
-	Compress   bool   `yaml:"compress"`
+	StaticPath    string `yaml:"path"`
+	IndexFile     string `yaml:"index"`
+	HostName      string `yaml:"host"`
+	CertFile      string `yaml:"certFile"`
+	KeyFile       string `yaml:"keyFile"`
+	Redirect      bool   `yaml:"redirectNonTLS"`
+	Compress      bool   `yaml:"compress"`
+	CompressLevel int    `yaml:"compressionLevel"`
 }
 
 // Configuration is the configuration loaded from config.yaml
-// @todo remove key and cert
 type Configuration struct {
 	LogLevel            string `yaml:"logLevel"`
 	RequirementPath     string `yaml:"requirementPath"`
@@ -31,6 +33,7 @@ type Configuration struct {
 	SitesAvailable      []Site `yaml:"sitesAvailable"`
 	DisableHealthCheck  bool   `yaml:"disableHealthCheck"`
 	HealthCheckPort     int    `yaml:"healthCheckPort"`
+	CompressLevel       int    `yaml:"compressionLevel"`
 }
 
 // ReadConfig reads the config from the file provided and parses it as Yaml

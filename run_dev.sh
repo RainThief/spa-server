@@ -21,10 +21,10 @@ if [ "$CURRENT_HEALTH_CHECK_PORT" != "$HEALTH_CHECK_PORT" ]; then
     sed -r "s/localhost:[0-9]+/localhost:$HEALTH_CHECK_PORT/g" build/Dockerfile > build/Dockerfile.new
     mv build/Dockerfile.new build/Dockerfile
 fi
-exit
-# echo $DEFAULT_HEALTH_CHECK_PORT
+# exit
+# # echo $DEFAULT_HEALTH_CHECK_PORT
 
-exit
+# exit
 
 # # @todo pushd
 

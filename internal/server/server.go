@@ -1,8 +1,10 @@
 package server
 
 import (
+	"compress/gzip"
 	"context"
 	"crypto/tls"
+	"errors"
 	"net/http"
 	"os"
 	"regexp"
@@ -24,6 +26,7 @@ const (
 	httpReadTimeout = 15 * time.Second
 	httpWriteTimeout
 	healthCheckDefaultPort = 8079
+	compressDefaultLevel   = gzip.DefaultCompression
 )
 
 // Servers collates TLS and non TLS servers with routing and sites configuration
@@ -161,7 +164,7 @@ func (s *Servers) Stop() {
 	for _, server := range servers {
 		go func(server *http.Server) {
 			_ = shutdownServer(server)
-			defer wg.Done()
+			wg.Done()
 		}(server)
 	}
 	wg.Wait()
@@ -192,8 +195,23 @@ func checkPort(serverType string) error {
 }
 
 func compress(handler http.Handler, config config.Site) http.Handler {
+	checkLevel := func(level int) (int, error) {
+		if level != 0 && level < 10 {
+			return level, nil
+		}
+		return 0, errors.New("Invalid level number, must be > 0 & < 10")
+	}
+
+	var compressLevel int
+	for _, level := range [3]int{config.CompressLevel, cfg.CompressLevel, compressDefaultLevel} {
+		if validLevel, err := checkLevel(level); err == nil {
+			compressLevel = validLevel
+			break
+		}
+	}
+
 	if config.Compress {
-		return handlers.CompressHandler(handler)
+		return handlers.CompressHandlerLevel(handler, compressLevel)
 	}
 	return handler
 }

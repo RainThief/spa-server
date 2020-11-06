@@ -1,6 +1,10 @@
 port: 80
 TLSPort: 443
 allowDirectoryIndex: true
+
+# OPTIONAL: set compression level as global default range (1 <-> 9) 1 fastest 9 best compression
+compressionLevel: 3
+
 sitesAvailable:
   - path: "/var/www/html"
     index: "index.html"
@@ -9,6 +13,9 @@ sitesAvailable:
     keyFile: /etc/spa-server/certs/spa-server.key
     redirectNonTLS: true
     compress: true
+
+    # OPTIONAL: set compression level for site (overrides global setting)
+    compressionLevel: 2
   - path: "/var/www/html/spa2/"
     index: "index.html"
     host: "127.0.0.1"
