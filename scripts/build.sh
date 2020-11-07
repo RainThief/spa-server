@@ -21,6 +21,8 @@ if [ "$CI" == "true" ]; then
 
     docker tag "$IMAGE_NAME" "$IMAGE_NAME:$BRANCH_TAG"
 
+    docker push "$IMAGE_NAME:$BRANCH_TAG"
+
     if [ "$GIT_BRANCH" == "master" ]; then
         # shellcheck disable=SC1091
         source "./scripts/semver.sh"
@@ -28,6 +30,6 @@ if [ "$CI" == "true" ]; then
         docker tag "$IMAGE_NAME" "$IMAGE_NAME:$RELEASE_TAG"
         git tag "v$RELEASE_TAG"
         git push --tags
+        docker push "$IMAGE_NAME"
     fi
-    docker push "$IMAGE_NAME"
 fi
