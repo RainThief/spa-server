@@ -44,10 +44,12 @@ sleep 2
 if [ ! -f "$CHECK_FILE" ]; then
 
 docker build -t "$CACHE_IMAGE" -f - . <<EOF
-FROM golang:1.15 AS build
+FROM golang:1.15-alpine AS build
+ENV CGO_ENABLED=0 GOOS=linux
 COPY . /app
 WORKDIR /app
 RUN go build -o spa-server /app/cmd/spa-server
+RN ls -la
 EOF
 
     touch "$CHECK_FILE"

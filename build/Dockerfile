@@ -1,19 +1,29 @@
 # Stage 1
-ARG baseImage="golang:1.15"
+ARG baseImage="golang:1.15-alpine"
+
 FROM ${baseImage} AS build
+
+ENV CGO_ENABLED=0 GOOS=linux
+
 COPY . /app
+
 WORKDIR /app
+
 RUN go build -o spa-server ./cmd/spa-server
-ENTRYPOINT /app/spa-server
+
+
 
 # Stage 2 - Build minimised image
-FROM debian:buster-slim
-RUN apt-get update && apt-get -y install --no-install-recommends curl
-RUN apt-get autoremove -y && apt-get clean -y
-# COPY --from=build /app/go.mod /app/go.mod
+FROM node:12-alpine
+
+RUN apk add --no-cache curl=7.67.0-r1
+
 COPY --from=build /app/spa-server /app/bin/spa-server
+
 COPY certs /etc/spa-server/certs
+
 COPY configs/config.default.yaml /etc/spa-server/config.yaml
+
 COPY web /var/www/html
 
 HEALTHCHECK --interval=15s --timeout=5s CMD (curl -k -X GET -Is http://localhost:8079 | grep "204") || exit 1
