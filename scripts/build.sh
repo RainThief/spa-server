@@ -32,5 +32,4 @@ if [ "$CI" == "true" ]; then
         git push --tags
         docker push "$IMAGE_NAME"
     fi
-
 fi
