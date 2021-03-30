@@ -1,0 +1,33 @@
+port: 80
+TLSPort: 443
+allowDirectoryIndex: true
+# compress: true
+expires:
+  html: "2 months"
+  png: "2 days"
+sitesAvailable:
+  - path: "/media/storage/projects/PERSONAL/spa-server/web"
+    index: "index.html"
+    host: "{subdomain:(?:www.)?}localhost"
+    # certFile: /etc/spa-server/certs/spa-server.pem
+    # keyFile: /etc/spa-server/certs/spa-server.key
+    certFile: /media/storage/projects/PERSONAL/spa-server/certs/spa-server.pem
+    keyFile: /media/storage/projects/PERSONAL/spa-server/certs/spa-server.key
+    # redirectNonTLS: true
+    compress: true
+    expires:
+      html: "1 month"
+      png: "1 day"
+  - path: "/media/storage/projects/PERSONAL/spa-server/web"
+  #   index: "index.html"
+  #   host: "127.0.0.1"
+  # - path: "/media/storage/projects/PERSONAL/spa-server/web"
+  #   index: "index.html"
+    host: "{all:.*}"
+    compress: false
+    expires:
+      html: "1 month"
+      png: "5 day"
+
+healthCheckPort: 8000
+disableHealthCheck: false
