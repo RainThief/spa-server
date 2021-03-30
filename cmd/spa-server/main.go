@@ -15,10 +15,12 @@ const (
 	defaultConfigPath = "/etc/spa-server/config.yaml"
 )
 
+var logger = logging.Logger
+
 func main() {
 	_, err := config.ReadConfig(parseArgs())
 	if err != nil {
-		logging.Error("Failed to read config file: %s", err)
+		logger.Error("Failed to read config file: %s", err)
 		return
 	}
 	server := server.NewServer()
@@ -26,7 +28,7 @@ func main() {
 	sigint := make(chan os.Signal, 1)
 	signal.Notify(sigint, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 	go func() {
-		server.Start()
+		server.Start(sigint)
 	}()
 	<-sigint
 }
@@ -38,9 +40,9 @@ func parseArgs() string {
 	args := flag.Args()
 
 	if len(args) < 1 {
-		logging.Debug("No user-supplied configuration file, using default")
+		logger.Debug("No user-supplied configuration file, using default")
 		return defaultConfigPath
 	}
-	logging.Debug("Using user-supplied configuration file %s", args[0])
+	logger.Debug("Using user-supplied configuration file %s", args[0])
 	return args[0]
 }

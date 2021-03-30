@@ -23,7 +23,7 @@ func (h RedirectNonTLSHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 		target += "?" + r.URL.RawQuery
 	}
 
-	logging.Debug("redirecting non TLS url to %s", target)
+	logging.Logger.Debug("redirecting non TLS url to %s", target)
 
 	http.Redirect(w, r, target, http.StatusTemporaryRedirect)
 }

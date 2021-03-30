@@ -1,31 +1,16 @@
 package logging
 
 import (
-	"errors"
-	"fmt"
 	"os"
+
+	"github.com/RainThief/spa-server/internal/config"
+	"github.com/RainThief/spa-server/pkg/logging"
 )
 
-// @todo use log package
+var Logger *logging.Logger
 
-func Error(msg string, v ...interface{}) {
-	_, _ = os.Stderr.WriteString(fmt.Sprintf(msg+"\n", v...))
-}
+var cfg *config.Configuration = &config.Config
 
-func Fatal(msg string, v ...interface{}) {
-	_, _ = os.Stderr.WriteString(fmt.Sprintf(msg+"\n", v...))
-}
-
-func Debug(msg string, v ...interface{}) {
-	_, _ = os.Stdout.WriteString(fmt.Sprintf(msg+"\n", v...))
-}
-
-func Info(msg string, v ...interface{}) {
-	_, _ = os.Stdout.WriteString(fmt.Sprintf(msg+"\n", v...))
-}
-
-func LogAndRaiseError(msg string, v ...interface{}) error {
-	errorMsg := fmt.Sprintf(msg, v...)
-	Error(errorMsg)
-	return errors.New(errorMsg)
+func init() {
+	Logger = logging.NewLogger(os.Stdout, os.Stderr, "INFO")
 }
