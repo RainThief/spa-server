@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
@@ -18,19 +19,25 @@ const (
 var logger = logging.Logger
 
 func main() {
-	_, err := config.ReadConfig(parseArgs())
-	if err != nil {
-		logger.Error("Failed to read config file: %s", err)
-		return
+	if err := start(); err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
 	}
-	server := server.NewServer()
-	defer server.Stop()
+}
+
+func start() error {
+	if _, err := config.ReadConfig(parseArgs()); err != nil {
+		return fmt.Errorf("Failed to read config file: %s", err)
+	}
+	httpServer := server.NewServer()
+	defer httpServer.Stop()
 	sigint := make(chan os.Signal, 1)
 	signal.Notify(sigint, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 	go func() {
-		server.Start(sigint)
+		httpServer.Start(sigint)
 	}()
 	<-sigint
+	return nil
 }
 
 // parseArgs gets the path to config file if supplied from commandline
