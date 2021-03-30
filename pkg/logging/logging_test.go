@@ -9,50 +9,59 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-var logger = Logger{os.Stdout, os.Stderr}
+var log *Logger
 
 var STDBuf bytes.Buffer
 var ERRBuf bytes.Buffer
 
-type ExampleTestSuite struct {
+type LoggingTestSuite struct {
 	suite.Suite
-	VariableThatShouldStartAtFive int
 }
 
-func (suite *ExampleTestSuite) SetupTest() {
+func (suite *LoggingTestSuite) SetupTest() {
+	log = NewLogger(os.Stdout, os.Stderr, "INFO")
 	STDBuf = bytes.Buffer{}
 	ERRBuf = bytes.Buffer{}
-	logger.SetSTDOutput(&STDBuf)
-	logger.SetSTDError(&ERRBuf)
+	log.SetSTDOutput(&STDBuf)
+	log.SetSTDError(&ERRBuf)
 }
 
-func (suite *ExampleTestSuite) TestLogError() {
-	logger.Error("test log")
+func (suite *LoggingTestSuite) TestLogError() {
+	log.Error("test log")
 	assert.Equal(suite.T(), "ERROR: test log\n", ERRBuf.String())
-
 }
 
-func (suite *ExampleTestSuite) TestLogFatal() {
-	logger.Fatal("test log")
+func (suite *LoggingTestSuite) TestLogFatal() {
+	log.Fatal("test log")
 	assert.Equal(suite.T(), "FATAL: test log\n", ERRBuf.String())
 }
 
-func (suite *ExampleTestSuite) TestLogDebug() {
-	logger.Debug("test log")
+func (suite *LoggingTestSuite) TestLogDebug() {
+	log.Debug("test log")
 	assert.Equal(suite.T(), "DEBUG: test log\n", STDBuf.String())
 }
 
-func (suite *ExampleTestSuite) TestLogInfo() {
-	logger.Info("test log")
+func (suite *LoggingTestSuite) TestLogInfo() {
+	log.Info("test log")
 	assert.Equal(suite.T(), "INFO: test log\n", STDBuf.String())
 }
 
-func (suite *ExampleTestSuite) TestLogAndRaiseError() {
-	err := logger.LogAndRaiseError("test log")
+func (suite *LoggingTestSuite) TestLogAndRaiseError() {
+	err := log.LogAndRaiseError("test log")
 	assert.Equal(suite.T(), "ERROR: test log\n", ERRBuf.String())
 	assert.NotNil(suite.T(), err)
 }
 
-func TestExampleTestSuite(t *testing.T) {
-	suite.Run(t, new(ExampleTestSuite))
+func (suite *LoggingTestSuite) TestFatalLogOnly() {
+	log = NewLogger(&STDBuf, &ERRBuf, "FATAL")
+	log.Info("%s", "info event")
+	assert.Equal(suite.T(), "", STDBuf.String(), "")
+	log.Error("%s", "error event")
+	assert.Equal(suite.T(), "", ERRBuf.String(), "")
+	log.Fatal("%s", "critical event")
+	assert.Equal(suite.T(), "FATAL: critical event\n", ERRBuf.String())
+}
+
+func TestLoggingTestSuite(t *testing.T) {
+	suite.Run(t, new(LoggingTestSuite))
 }
