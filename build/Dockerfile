@@ -26,6 +26,6 @@ COPY configs/config.default.yaml /etc/spa-server/config.yaml
 
 COPY web /var/www/html
 
-HEALTHCHECK --interval=15s --timeout=5s CMD (curl -k -X GET -Is http://localhost:8079 | grep "204") || exit 1
+HEALTHCHECK --interval=15s --timeout=5s CMD (curl -k -X GET -Is http://localhost:8000 | grep "204") || exit 1
 
 ENTRYPOINT ["/app/bin/spa-server"]

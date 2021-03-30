@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -u
 
+fuser -k 443/tcp
+sudo /usr/local/go/bin/go run cmd/spa-server/main.go "/media/storage/projects/PERSONAL/spa-server/configs/config.dev.yaml"
+exit
 # Use this file to build and run the project for use in developing the application
 # to force rebuild of go cache delete ./cache_built file
 
@@ -49,9 +52,7 @@ ENV CGO_ENABLED=0 GOOS=linux
 COPY . /app
 WORKDIR /app
 RUN go build -o spa-server /app/cmd/spa-server
-RN ls -la
 EOF
-
     touch "$CHECK_FILE"
 fi
 
@@ -68,4 +69,4 @@ fi
 
 docker stop temp-spa-server
 
-docker run --init --rm -t --network=host -v $(pwd)/configs/config.default.yaml:/config.yml --name "$IMAGE" "$IMAGE" $@
+docker run --init --rm -p 8002:8002 -t --network=host -v $(pwd)/configs/config.default.yaml:/config.yml --name "$IMAGE" "$IMAGE" $@

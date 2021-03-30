@@ -1,9 +1,5 @@
 port: 80
 TLSPort: 443
-allowDirectoryIndex: true
-expires:
-  html: "2 months"
-  png: "2 days"
 sitesAvailable:
   - path: "/var/www/html"
     index: "index.html"

@@ -20,3 +20,6 @@ if you edit health check and healthcheck port you need to edit docker file and r
 CONFIG DEFAULTS
 disableHealthCheck: false
 healthCheckPort: 8079
+
+
+it is an spa server so returns main index page, static file found or directory index (optional)

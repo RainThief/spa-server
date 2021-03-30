@@ -1,23 +1,31 @@
 package config
 
-// func Test(t *testing.T) { TestingT(t) }
+import (
+	"testing"
 
-// var _ = Suite(&mainTestSuite{})
+	. "gopkg.in/check.v1"
+)
 
-// type mainTestSuite struct {
-// 	suite.Suite
-// }
+func Test(t *testing.T) { TestingT(t) }
 
-// // TestDefaultConfig check with no args default config file path is set
-// func (*mainTestSuite) TestDefaultConfig(c *C) {
-// 	configFilePath := parseArgs()
-// 	c.Assert(configFilePath, Equals, defaultConfigPath)
-// }
+var _ = Suite(&configTestSuite{})
 
-// // TestParseArgs check with config file path is set with args
-// func (*mainTestSuite) TestParseArgs(c *C) {
-// 	config := "my.conf"
-// 	os.Args[1] = config
-// 	configFilePath := parseArgs()
-// 	c.Assert(configFilePath, Equals, config)
-// }
+type configTestSuite struct{}
+
+func (s *configTestSuite) TestConfigStructHasExpectedValues(c *C) {
+	cfg, err := ReadConfig("../../configs/config.example.yaml")
+	c.Assert(err, IsNil)
+	c.Check(cfg.Port, Equals, "80")
+	c.Check(cfg.TLSPort, Equals, "443")
+	c.Check(cfg.Expires["png"], Equals, "2 days")
+	c.Check(cfg.SitesAvailable[0].CertFile, Equals, "/etc/spa-server/certs/spa-server.pem")
+	c.Check(cfg.SitesAvailable[0].Expires["html"], Equals, "2 months")
+	c.Check(len(cfg.SitesAvailable), Equals, 3)
+	c.Check(cfg.DisableHealthCheck, Equals, false)
+}
+
+func (s *configTestSuite) TestFailsWithNoConfigFileAvailable(c *C) {
+	cfg, err := ReadConfig("invalidpath/not_a_file")
+	c.Check(err, NotNil)
+	c.Check(cfg, IsNil)
+}

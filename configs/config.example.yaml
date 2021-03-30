@@ -1,13 +1,28 @@
+# @todo put in readme and doc all options
+
 port: 80
 TLSPort: 443
 allowDirectoryIndex: true
 
+# OPTIONAL: set gzip compression
+compress: true
 # OPTIONAL: set compression level as global default range (1 <-> 9) 1 fastest 9 best compression
 compressionLevel: 3
 
+# options are FATAL, ERROR, WARNING, DEBUG, INFO
+logLevel: INFO
+
+# OPTIONAL: set cache expires headers for file type
+expires:
+  html: "2 months"
+  png: "2 days"
+
+# list all available spa sites ot be served
 sitesAvailable:
   - path: "/var/www/html"
     index: "index.html"
+
+    # match hostname pattern https://godoc.org/github.com/gorilla/mux#Route.Host
     host: "{subdomain:(?:www.)?}localhost"
     certFile: /etc/spa-server/certs/spa-server.pem
     keyFile: /etc/spa-server/certs/spa-server.key
@@ -16,12 +31,19 @@ sitesAvailable:
 
     # OPTIONAL: set compression level for site (overrides global setting)
     compressionLevel: 2
+
+    # OPTIONAL: set cache expires headers for file type (overrides global setting)
+    expires:
+      html: "2 months"
+      png: "1 day"
+
   - path: "/var/www/html/spa2/"
     index: "index.html"
     host: "127.0.0.1"
   - path: "/var/www/html"
     index: "index.html"
     host: "{all:.*}"
+    compress: false
 
 
 disableHealthCheck: false
