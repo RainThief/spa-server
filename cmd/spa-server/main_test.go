@@ -4,7 +4,6 @@ import (
 	"os"
 	"testing"
 
-	"github.com/stretchr/testify/suite"
 	. "gopkg.in/check.v1"
 )
 
@@ -12,9 +11,7 @@ func Test(t *testing.T) { TestingT(t) }
 
 var _ = Suite(&mainTestSuite{})
 
-type mainTestSuite struct {
-	suite.Suite
-}
+type mainTestSuite struct{}
 
 // TestDefaultConfig check with no args default config file path is set
 func (*mainTestSuite) TestDefaultConfig(c *C) {
