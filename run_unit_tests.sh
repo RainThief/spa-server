@@ -8,4 +8,4 @@ docker run --rm  -t \
     --mount type=bind,source="${PROJECT_ROOT}",target=/app \
     -w /app \
     -e XDG_CACHE_HOME=/tmp/.cache \
-    golang:1.14 go test -race -cover ./cmd/... "$@"
+    golang:1.14 go test -race -cover ./... "$@"
