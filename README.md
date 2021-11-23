@@ -2,7 +2,7 @@
 @todo write this
 
 ## How to run
-`docker run -it -p 80:80 -p 443:443 registry.gitlab.com/martinfleming/spa-server:latest`
+`docker run -it -p 80:80 -p 443:443 ghcr.io/rainthief/spa-server/spa-server:latest`
 
 
 // Only matches if domain is "www.example.com".
@@ -20,3 +20,6 @@ if you edit health check and healthcheck port you need to edit docker file and r
 CONFIG DEFAULTS
 disableHealthCheck: false
 healthCheckPort: 8079
+
+
+it is an spa server so returns main index page, static file found or directory index (optional)

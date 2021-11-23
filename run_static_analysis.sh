@@ -14,7 +14,7 @@ docker run --rm -t \
     -w /app \
     -e XDG_CACHE_HOME=/tmp/.cache \
     golangci/golangci-lint:v1.27.0 \
-    golangci-lint run -E golint
+    golangci-lint --color always run -E golint --skip-files test.go
 
 docker run --rm -t -u=$(id -u):$(id -g) \
     -v "$PROJECT_ROOT":/app \

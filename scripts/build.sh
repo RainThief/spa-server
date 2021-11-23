@@ -3,7 +3,7 @@ set -eu
 
 CI=${CI:-"false"}
 
-IMAGE_NAME="docker.pkg.github.com/rainthief/spa-server/spa-server"
+IMAGE_NAME="ghcr.io/rainthief/spa-server/spa-server"
 
 # Assume this script is in the src directory and work from that location
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}" )" && pwd)/../"
@@ -32,5 +32,4 @@ if [ "$CI" == "true" ]; then
         git push --tags
         docker push "$IMAGE_NAME"
     fi
-
 fi

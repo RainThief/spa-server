@@ -11,7 +11,7 @@ env:
   CI: true
   DOCKER_USER: ${{ github.actor }}
   DOCKER_PASS: ${{ secrets.GITHUB_TOKEN }}
-  DOCKER_REG: docker.pkg.github.com
+  DOCKER_REG: ghcr.io
 
 
 jobs:
