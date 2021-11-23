@@ -7,9 +7,9 @@ import (
 	"os/signal"
 	"syscall"
 
-	"gitlab.com/martinfleming/spa-server/internal/config"
-	"gitlab.com/martinfleming/spa-server/internal/logging"
-	"gitlab.com/martinfleming/spa-server/internal/server"
+	"github.com/RainThief/spa-server/internal/config"
+	"github.com/RainThief/spa-server/internal/logging"
+	"github.com/RainThief/spa-server/internal/server"
 )
 
 const (

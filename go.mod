@@ -1,4 +1,4 @@
-module gitlab.com/martinfleming/spa-server
+module github.com/RainThief/spa-server
 
 go 1.15
 

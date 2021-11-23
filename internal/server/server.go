@@ -13,9 +13,9 @@ import (
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 
-	"gitlab.com/martinfleming/spa-server/internal/config"
-	"gitlab.com/martinfleming/spa-server/internal/logging"
-	httphandlers "gitlab.com/martinfleming/spa-server/pkg/httpHandlers"
+	"github.com/RainThief/spa-server/internal/config"
+	"github.com/RainThief/spa-server/internal/logging"
+	httphandlers "github.com/RainThief/spa-server/pkg/httpHandlers"
 )
 
 var logger = logging.Logger

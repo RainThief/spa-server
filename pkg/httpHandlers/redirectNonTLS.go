@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"regexp"
 
-	"gitlab.com/martinfleming/spa-server/internal/logging"
+	"github.com/RainThief/spa-server/internal/logging"
 )
 
 // RedirectNonTLSHandler redirects non TLS URLs to TLS with same host
