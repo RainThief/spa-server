@@ -16,7 +16,7 @@ RUN go build -o spa-server ./cmd/spa-server
 # Stage 2 - Build minimised image
 FROM node:12-alpine
 
-RUN apk add --no-cache curl=7.67.0-r1
+RUN apk add --no-cache curl
 
 COPY --from=build /app/spa-server /app/bin/spa-server
 
