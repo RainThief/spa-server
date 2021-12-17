@@ -10,43 +10,92 @@ on:
 env:
   CI: true
   DOCKER_USER: ${{ github.actor }}
-  DOCKER_PASS: ${{ secrets.GITHUB_TOKEN }}
+  DOCKER_PASS: ${{ secrets.GHCR_TOKEN }}
   DOCKER_REG: ghcr.io
+  GITHUB_TOKEN: ${{ secrets.GHCR_TOKEN }}
 
 
 jobs:
-  check:
-    name: Check
+
+  audit:
+    name: Audit
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Dependency audit
+        run: make -s audit
+
+  static-analysis:
+    name: Static analysis
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
 
       - name: Code analysis
-        run: ./run_static_analysis.sh
+        run: make -s static-analysis
 
-
-  test:
-    name: Test
+  unit-test:
+    name: Unit test
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
 
       - name: Unit tests
-        run: ./run_unit_tests.sh
+        run: make -s unit-test
 
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v2
+        with:
+          name: coverage
+          path: logs
 
-  build:
-    name: Build
-    needs: [check, test]
+  system-test:
+    name: System test
+    needs: [unit-test, static-analysis, audit]
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
+
+      - name: Install qemu
+        run: sudo apt-get install -y qemu-user-static
+
+      - name: System test
+        run: make -s system-test
+
+  release:
+    name: Release
+    if: github.ref == 'refs/heads/master'
+    needs: [system-test]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
         with:
+          token: ${{ secrets.GHCR_TOKEN }}
           fetch-depth: 0
 
-      - name: Build image
-        run: ./scripts/build.sh
+      - name: Install qemu
+        run: sudo apt-get install -y qemu-user-static
 
+      - name: Tag release
+        run: make -s release
+
+  delete-from-ecr-on-merge:
+      needs: [system-test]
+      name: Delete from ECR on merge
+      runs-on: ubuntu-latest
+      if: github.event.pull_request.merged == 'true'
+      steps:
+        - name: Checkout repo
+          uses: actions/checkout@v2
+
+        - name: Delete from ECR on merge
+          run: |
+            make -s prepare
+            source ${CI_DIR_NAME}/common/ecr.sh
+            trigger_push_to_ecr ${{ needs.tag_release.outputs.GENERATED_IMAGE_NAME }} delete

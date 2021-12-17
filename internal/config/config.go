@@ -50,9 +50,11 @@ func ReadConfig(filePath string) (*Configuration, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	if err := yaml.Unmarshal(data, &Config); err != nil {
 		return &Config, err
 	}
+
 	generateExpiresConfig()
 
 	return &Config, nil
@@ -65,5 +67,6 @@ func IsTLSsite(site Site) bool {
 		strings.TrimSpace(site.KeyFile) == "" {
 		return false
 	}
+
 	return true
 }

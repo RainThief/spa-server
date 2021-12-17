@@ -1,4 +1,5 @@
 .gomodules
 .devcontainer
-cache-built
-*.bak
+build/ci-support
+build/.nancy_cache
+logs
