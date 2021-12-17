@@ -3,6 +3,8 @@ package server
 import (
 	"context"
 	"crypto/tls"
+	"crypto/x509"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"regexp"
@@ -27,6 +29,8 @@ const (
 	httpWriteTimeout
 	healthCheckDefaultPort = 8080
 )
+
+var caCertPool = x509.NewCertPool()
 
 // Servers collates TLS and non TLS servers with routing and sites configuration
 type Servers struct {
@@ -56,6 +60,7 @@ func NewServer() *Servers {
 	server.processSites()
 	server.configureRoutes()
 	server.configureServers()
+
 	return server
 }
 
@@ -66,14 +71,15 @@ func (s *Servers) processSites() {
 	httpErr := checkPort("HTTP")
 
 	for _, spaConfig := range cfg.SitesAvailable {
-
 		// set site non secure
 		if httpErr == nil {
 			s.sites = append(s.sites, config.Site(spaConfig))
 			logMsg := "Setting HTTP site %s"
+
 			if spaConfig.Redirect {
 				logMsg = "Setting HTTP site %s for TLS redirect"
 			}
+
 			logger.Info(logMsg, spaConfig.HostName)
 		}
 
@@ -82,8 +88,10 @@ func (s *Servers) processSites() {
 			logMsg := "No valid certificate information for site %s, setting HTTP only"
 			if config.IsTLSsite(spaConfig) {
 				logMsg = "Setting TLS site %s"
+
 				s.tlsSites = append(s.tlsSites, config.Site(spaConfig))
 			}
+
 			logger.Info(logMsg, spaConfig.HostName)
 		}
 	}
@@ -109,6 +117,7 @@ func (s *Servers) configureRoutes() {
 		if site.Redirect {
 			handler = httphandlers.RedirectNonTLSHandler{}
 		}
+
 		s.router.Host(site.HostName).PathPrefix("/").Handler(handler)
 	}
 
@@ -118,6 +127,10 @@ func (s *Servers) configureRoutes() {
 		if err == nil {
 			s.certificates = append(s.certificates, cert)
 			s.tlsRouter.Host(site.HostName).PathPrefix("/").Handler(getHandler(site))
+
+			if caCert, err := ioutil.ReadFile("cert.pem"); err == nil {
+				caCertPool.AppendCertsFromPEM(caCert)
+			}
 		}
 	}
 }
@@ -126,13 +139,20 @@ func (s *Servers) configureServers() {
 	if len(s.sites) > 0 {
 		s.server = configureServer(cfg.Port, handlers.CombinedLoggingHandler(os.Stdout, s.router))
 	}
+
 	if len(s.tlsSites) > 0 {
 		s.tlsServer = configureServer(cfg.TLSPort, handlers.CombinedLoggingHandler(os.Stdout, s.tlsRouter))
-		s.tlsServer.TLSConfig = &tls.Config{Certificates: s.certificates}
+		s.tlsServer.TLSConfig = &tls.Config{
+			Certificates: s.certificates,
+			RootCAs:      caCertPool,
+			MinVersion:   tls.VersionTLS12,
+		}
 	}
+
 	if cfg.HealthCheckPort == 0 {
 		cfg.HealthCheckPort = healthCheckDefaultPort
 	}
+
 	s.healthCheckServer = configureServer(strconv.Itoa(cfg.HealthCheckPort), healthCheckHandler{})
 }
 
@@ -140,6 +160,7 @@ func (s *Servers) configureServers() {
 func (s *Servers) Start(signalChan chan<- os.Signal) {
 	listenAndServe := func(s *Servers) error {
 		err := make(chan error)
+
 		if !cfg.DisableHealthCheck {
 			go func() {
 				logger.Info("Healthcheck server starting; listening on port %v", cfg.HealthCheckPort)
@@ -156,6 +177,7 @@ func (s *Servers) Start(signalChan chan<- os.Signal) {
 			logger.Info("HTTPS server starting; listening on port %s", cfg.TLSPort)
 			err <- s.tlsServer.ListenAndServeTLS("", "")
 		}()
+
 		return <-err
 	}
 	if err := listenAndServe(s); err != http.ErrServerClosed {
@@ -167,20 +189,26 @@ func (s *Servers) Start(signalChan chan<- os.Signal) {
 // Stop the server listening; graceful shutdown
 func (s *Servers) Stop() {
 	var wg sync.WaitGroup
+
 	servers := []*http.Server{
 		s.server,
 		s.tlsServer,
 	}
+
 	if !cfg.DisableHealthCheck {
 		servers = append(servers, s.healthCheckServer)
 	}
+
 	wg.Add(len(servers))
+
 	for _, server := range servers {
 		go func(server *http.Server) {
 			_ = shutdownServer(server)
+
 			wg.Done()
 		}(server)
 	}
+
 	wg.Wait()
 }
 
@@ -189,6 +217,7 @@ func shutdownServer(server *http.Server) error {
 		logger.Error("Error stopping server: %s", err)
 		return err
 	}
+
 	logger.Info("Server stopped successfully; releasing binding %s", server.Addr)
 
 	return nil
@@ -196,15 +225,18 @@ func shutdownServer(server *http.Server) error {
 
 func checkPort(serverType string) error {
 	var port string
+
 	switch serverType {
 	case "HTTP":
 		port = cfg.Port
 	case "HTTPS":
 		port = cfg.TLSPort
 	}
+
 	if !regexp.MustCompile(`^[0-9]{1,5}$`).MatchString(port) {
 		return logger.LogAndRaiseError("Can not serve %s, invalid port declared %s", serverType, port)
 	}
+
 	return nil
 }
 

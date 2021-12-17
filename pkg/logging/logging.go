@@ -34,6 +34,7 @@ func setLogLevel(level string) (logLevel int) {
 	default:
 		logLevel = InfoLevel
 	}
+
 	return
 }
 
@@ -88,6 +89,7 @@ func (l *Logger) LogAndRaiseError(msg string, v ...interface{}) error {
 	if l.logLevel >= ErrorLevel {
 		l.Error(errorMsg)
 	}
+
 	return errors.New(errorMsg)
 }
 

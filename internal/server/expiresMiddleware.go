@@ -15,7 +15,6 @@ func expiresMiddleware(
 	w http.ResponseWriter,
 	r *http.Request,
 ) {
-
 	// no expires config set, nothing for middleware to do
 	if len(siteConf.ExpiresParsed) == 0 && len(cfg.ExpiresParsed) == 0 {
 		next(w, r, path)
@@ -29,6 +28,7 @@ func expiresMiddleware(
 		if duration, ok := config[filepath.Ext(path)[1:]]; ok {
 			w.Header().Set("cache-control", "public")
 			w.Header().Set("expires", time.Now().Add(duration).Format(http.TimeFormat))
+
 			break
 		}
 	}

@@ -3,6 +3,7 @@ package config
 import (
 	"time"
 
+	//revive:disable:dot-imports
 	. "gopkg.in/check.v1"
 )
 
@@ -31,18 +32,23 @@ func (s *expiresConfigTestSuite) TestConfigSiteStructHasExpectedValues(c *C) {
 func (s *expiresConfigTestSuite) TestStringsCanBeConvertedToDuration(c *C) {
 	second, _ := stringToDuration("1 second")
 	c.Check(second, Equals, 1*time.Second)
+
 	minute, _ := stringToDuration("1 minute")
 	c.Check(minute, Equals, 1*time.Minute)
+
 	hour, _ := stringToDuration("1 hour")
 	c.Check(hour, Equals, 1*time.Hour)
+
 	day, _ := stringToDuration("1 day")
 	c.Check(day.Round(time.Minute), Equals, 24*time.Hour)
+
 	month, _ := stringToDuration("1 month")
 	c.Check(
 		time.Until(time.Now().AddDate(0, 1, 0)).Round(time.Minute),
 		Equals,
 		month.Round(time.Minute),
 	)
+
 	year, _ := stringToDuration("1 year")
 	c.Check(year.Round(time.Minute), Equals, (365 * (24 * time.Hour)))
 }
@@ -50,6 +56,7 @@ func (s *expiresConfigTestSuite) TestStringsCanBeConvertedToDuration(c *C) {
 func (s *expiresConfigTestSuite) TestPluralStringsCanBeConvertedToDuration(c *C) {
 	second, _ := stringToDuration("1 seconds")
 	c.Check(second, Equals, 1*time.Second)
+
 	minute, _ := stringToDuration("2 minutes")
 	c.Check(minute, Equals, 2*time.Minute)
 }
@@ -57,6 +64,7 @@ func (s *expiresConfigTestSuite) TestPluralStringsCanBeConvertedToDuration(c *C)
 func (s *expiresConfigTestSuite) TestCapitalStringsCanBeConvertedToDuration(c *C) {
 	second, _ := stringToDuration("1 SECOND")
 	c.Check(second, Equals, 1*time.Second)
+
 	minute, _ := stringToDuration("2 SECONDS")
 	c.Check(minute, Equals, 2*time.Second)
 }

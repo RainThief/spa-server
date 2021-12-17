@@ -22,6 +22,7 @@ func (suite *LoggingTestSuite) SetupTest() {
 	log = NewLogger(os.Stdout, os.Stderr, "INFO")
 	STDBuf = bytes.Buffer{}
 	ERRBuf = bytes.Buffer{}
+
 	log.SetSTDOutput(&STDBuf)
 	log.SetSTDError(&ERRBuf)
 }
@@ -48,6 +49,7 @@ func (suite *LoggingTestSuite) TestLogInfo() {
 
 func (suite *LoggingTestSuite) TestLogAndRaiseError() {
 	err := log.LogAndRaiseError("test log")
+
 	assert.Equal(suite.T(), "ERROR: test log\n", ERRBuf.String())
 	assert.NotNil(suite.T(), err)
 }
