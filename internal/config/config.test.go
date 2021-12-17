@@ -3,6 +3,7 @@ package config
 import (
 	"testing"
 
+	//revive:disable:dot-imports
 	. "gopkg.in/check.v1"
 )
 

@@ -12,7 +12,6 @@ type RedirectNonTLSHandler struct{}
 
 // ServeHTTP calls HandlerFunc(w, r)
 func (h RedirectNonTLSHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-
 	host := regexp.MustCompile(
 		`(.*):[0-9]+$`,
 	).ReplaceAllString(r.Host, `$1`)
