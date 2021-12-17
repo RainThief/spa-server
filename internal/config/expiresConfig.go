@@ -21,14 +21,17 @@ type expires map[string]string
 func generateExpiresConfig() {
 	parsedConfig := func(data expires) (config ExpiresParsed) {
 		config = make(ExpiresParsed)
+
 		for i, v := range data {
 			duration, err := stringToDuration(strings.ToLower(v))
 			if err != nil {
 				logger.Error("Cannot set expires duration from %s, %s", data[i], err)
 				continue
 			}
+
 			config[i] = duration
 		}
+
 		return
 	}
 
@@ -71,5 +74,6 @@ func stringToDuration(interval string) (expiry time.Duration, err error) {
 	case "year":
 		expiry = time.Until(now.AddDate(increment, 0, 0))
 	}
+
 	return
 }

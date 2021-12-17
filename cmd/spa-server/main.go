@@ -29,14 +29,19 @@ func start() error {
 	if _, err := config.ReadConfig(parseArgs()); err != nil {
 		return fmt.Errorf("Failed to read config file: %s", err)
 	}
+
 	httpServer := server.NewServer()
+
 	defer httpServer.Stop()
+
 	sigint := make(chan os.Signal, 1)
 	signal.Notify(sigint, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+
 	go func() {
 		httpServer.Start(sigint)
 	}()
 	<-sigint
+
 	return nil
 }
 
@@ -50,6 +55,8 @@ func parseArgs() string {
 		logger.Debug("No user-supplied configuration file, using default")
 		return defaultConfigPath
 	}
+
 	logger.Debug("Using user-supplied configuration file %s", args[0])
+
 	return args[0]
 }
