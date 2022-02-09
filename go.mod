@@ -3,6 +3,7 @@ module github.com/RainThief/spa-server
 go 1.15
 
 require (
+	bou.ke/monkey v1.0.2
 	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect

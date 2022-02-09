@@ -72,8 +72,7 @@ unit-test:
 	make prepare
 	export PROJECT_ROOT=${PROJECT_ROOT}; \
 	source ${CI_DIR_NAME}/common/docker.sh; \
-	echo_warning "unit tests not yet implemented"
-	# exec_ci_container go 1.16 "${CI_DIR_NAME}/go/unit_test.sh" "$@"
+	exec_ci_container go 1.16 "${CI_DIR_NAME}/go/unit_test.sh" "$@"
 
 
 system-test:

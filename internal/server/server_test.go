@@ -21,7 +21,7 @@ func TestServerTestSuite(t *testing.T) {
 // }
 
 func (suite *ServerTestSuite) TestSetsUpServer() {
-	_, _ = config.ReadConfig("../../test/testdata/httpOnlySites.yml")
+	_, _ = config.ReadConfig("../../configs/config.example.yaml")
 	server := NewServer()
 	// assert.Equal(suite.T(), server.sites[0].HostName, "{subdomain:(?:www.)?}localhost")
 	assert.Len(suite.T(), server.sites, 3)
