@@ -52,7 +52,7 @@ func ReadConfig(filePath string) (*Configuration, error) {
 	}
 
 	if err := yaml.Unmarshal(data, &Config); err != nil {
-		return &Config, err
+		return nil, err
 	}
 
 	generateExpiresConfig()

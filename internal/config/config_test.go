@@ -29,4 +29,21 @@ func (s *configTestSuite) TestFailsWithNoConfigFileAvailable(c *C) {
 	cfg, err := ReadConfig("invalidpath/not_a_file")
 	c.Check(err, NotNil)
 	c.Check(cfg, IsNil)
+
+	cfg, err = ReadConfig("../../configs/config.invalid.yaml")
+	c.Check(err, NotNil)
+	c.Check(cfg, IsNil)
+}
+
+func (s *configTestSuite) TestDetectTLSsite(c *C) {
+	c.Check(IsTLSsite(Site{}), Equals, false)
+
+	c.Check(IsTLSsite(Site{
+		CertFile: "CertFile",
+	}), Equals, false)
+
+	c.Check(IsTLSsite(Site{
+		CertFile: "CertFile",
+		KeyFile:  "KeyFile",
+	}), Equals, true)
 }
