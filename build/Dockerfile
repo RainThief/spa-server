@@ -16,7 +16,7 @@ RUN --mount=type=cache,target=/var/cache/go go build -o spa-server ./cmd/spa-ser
 
 FROM alpine:3.15
 
-RUN apk add --no-cache curl=7.80.0-r0
+RUN apk add --no-cache curl=7.80.0-r3
 
 COPY --from=builder /app/spa-server /app/bin/spa-server
 

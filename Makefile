@@ -19,7 +19,7 @@ build: all
 
 
 prepare:
-	if [ "${LOCAL_CI_PATH}" != "" ]; then \
+	if [ "${LOCAL_CI_PATH}" != "" ] && [ -d "${LOCAL_CI_PATH}" ]; then \
 		make prepare-dev; \
 	else \
 		if [ ! -d "${CI_DIR_NAME}" ]; then \
